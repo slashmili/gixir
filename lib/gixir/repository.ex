@@ -25,4 +25,13 @@ defmodule Gixir.Repository do
       error -> error
     end
   end
+
+  def open(path) do
+    with {:ok, gixir} <- Gixir.start(),
+         :ok <- GenServer.call(gixir, {:repository_open, path}) do
+      {:ok, %Repository{path: path, gixir_pid: gixir}}
+    else
+      error -> error
+    end
+  end
 end

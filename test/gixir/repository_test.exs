@@ -23,4 +23,10 @@ defmodule Gixir.Repository.Test do
     repo_path = "/tmp1111/asd"
     {:error, {:repository_init_at, _ }} = Gixir.Repository.init_at(repo_path, bare: true)
   end
+
+  test "open an existing repository" do
+    repo_path = get_random_repo_path()
+    {:ok, _repo} = Gixir.Repository.init_at(repo_path, bare: true)
+    {:ok, _repo} = Gixir.Repository.open(repo_path)
+  end
 end

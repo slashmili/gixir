@@ -16,6 +16,7 @@ static void handle_ping(const char *req, int *req_index) {
 static struct request_handler request_handlers[] = {
     { "ping", handle_ping },
     { "repository_init_at", handle_repository_init_at },
+    { "repository_open", handle_repository_open },
     { NULL, NULL }
 };
 
