@@ -1,5 +1,8 @@
 defmodule Gixir.Repository do
 
+  alias Gixir.Repository
+  defstruct path: nil, gixir_pid: nil
+
   @doc """
   Initialize a Git repository in `path`. This implies creating all the
   necessary files on the FS, or re-initializing an already existing
@@ -15,8 +18,11 @@ defmodule Gixir.Repository do
   """
   def init_at(path, opts \\ []) do
     bare = Keyword.get(opts, :bare, false)
-    with {:ok, gixir} <- Gixir.start() do
-      GenServer.call(gixir, {:repository_init_at, path, bare})
+    with {:ok, gixir} <- Gixir.start(),
+         :ok <- GenServer.call(gixir, {:repository_init_at, path, bare}) do
+      {:ok, %Repository{path: path, gixir_pid: gixir}}
+    else
+      error -> error
     end
   end
 end
