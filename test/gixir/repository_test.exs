@@ -15,12 +15,12 @@ defmodule Gixir.Repository.Test do
 
   test "init bare repo" do
     repo_path = get_random_repo_path()
-    {:ok, _repo} = Gixir.Repository.init_at(repo_path, :bare)
+    {:ok, _repo} = Gixir.Repository.init_at(repo_path, bare: true)
     assert File.exists? Path.join(repo_path, "HEAD")
   end
 
   test "fail on wrong repo path" do
     repo_path = "/tmp1111/asd"
-    {:error, {:repository_init_at, _ }} = Gixir.Repository.init_at(repo_path, :bare)
+    {:error, {:repository_init_at, _ }} = Gixir.Repository.init_at(repo_path, bare: true)
   end
 end
