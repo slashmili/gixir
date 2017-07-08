@@ -1,0 +1,26 @@
+defmodule Gixir.Repository.Test do
+  use ExUnit.Case
+  doctest Gixir
+
+  defp get_random_repo_path do
+  name = :crypto.strong_rand_bytes(9) |> Base.encode16(case: :lower)
+  Path.expand("./priv/test_tmp/#{name}")
+  end
+
+  test "init a repo" do
+    repo_path = get_random_repo_path()
+    {:ok, _repo} = Gixir.Repository.init_at(repo_path)
+    refute File.exists? Path.join(repo_path, "HEAD")
+  end
+
+  test "init bare repo" do
+    repo_path = get_random_repo_path()
+    {:ok, _repo} = Gixir.Repository.init_at(repo_path, :bare)
+    assert File.exists? Path.join(repo_path, "HEAD")
+  end
+
+  test "fail on wrong repo path" do
+    repo_path = "/tmp1111/asd"
+    {:error, {:repository_init_at, _ }} = Gixir.Repository.init_at(repo_path, :bare)
+  end
+end
