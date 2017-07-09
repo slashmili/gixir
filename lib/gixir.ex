@@ -28,18 +28,8 @@ defmodule Gixir do
     {:reply, response, state}
   end
 
-  def handle_call({:repository_init_at, path, bare}, _from, state) do
-    response = call_port(state, :repository_init_at, {path, bare})
-    {:reply, response, state}
-  end
-
-  def handle_call({:repository_open, path}, _from, state) do
-    response = call_port(state, :repository_open, {path})
-    {:reply, response, state}
-  end
-
-  def handle_call({:repository_list_branches, path}, _from, state) do
-    response = call_port(state, :repository_list_branches, {path})
+  def handle_call({command, params}, _from, state) do
+    response = call_port(state, command, params)
     {:reply, response, state}
   end
 

@@ -19,7 +19,7 @@ defmodule Gixir.Repository do
   def init_at(path, opts \\ []) do
     bare = Keyword.get(opts, :bare, false)
     with {:ok, gixir} <- Gixir.start(),
-         :ok <- GenServer.call(gixir, {:repository_init_at, path, bare}) do
+         :ok <- GenServer.call(gixir, {:repository_init_at, {path, bare}}) do
       {:ok, %Repository{path: path, gixir_pid: gixir}}
     else
       error -> error
@@ -28,7 +28,7 @@ defmodule Gixir.Repository do
 
   def open(path) do
     with {:ok, gixir} <- Gixir.start(),
-         :ok <- GenServer.call(gixir, {:repository_open, path}) do
+         :ok <- GenServer.call(gixir, {:repository_open, {path}}) do
       {:ok, %Repository{path: path, gixir_pid: gixir}}
     else
       error -> error
@@ -36,6 +36,6 @@ defmodule Gixir.Repository do
   end
 
   def list_branches(repo) do
-    GenServer.call(repo.gixir_pid, {:repository_list_branches, repo.path})
+    GenServer.call(repo.gixir_pid, {:repository_list_branches, {repo.path}})
   end
 end
