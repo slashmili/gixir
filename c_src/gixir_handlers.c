@@ -1,5 +1,6 @@
 #include "gixir_handlers.h"
 #include "gixir_repository_handlers.h"
+#include "gixir_blob_handlers.h"
 
 
 static void handle_ping(const char *req, int *req_index) {
@@ -18,6 +19,7 @@ static struct request_handler request_handlers[] = {
     { "repository_init_at", handle_repository_init_at },
     { "repository_open", handle_repository_open },
     { "repository_list_branches", handle_repository_list_branches },
+    { "blob_from_workdir", handle_blob_from_workdir },
     { NULL, NULL }
 };
 

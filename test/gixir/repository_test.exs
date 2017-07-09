@@ -1,4 +1,4 @@
-defmodule Gixir.Repository.Test do
+defmodule Gixir.RepositoryTest do
   use ExUnit.Case
   doctest Gixir
 
