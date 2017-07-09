@@ -154,6 +154,7 @@ void handle_repository_list_branches(const char *req, int *req_index) {
     while (!exception && (error = git_branch_next(&branch, &branch_type, iter)) == GIT_OK) {
         printf("%d: ", branch_type);
         printf("%s\n", git_reference_shorthand(branch));
+        git_reference_free(branch);
     }
     git_branch_iterator_free(iter);
     git_repository_free(repo);
