@@ -38,6 +38,11 @@ defmodule Gixir do
     {:reply, response, state}
   end
 
+  def handle_call({:repository_list_branches, path}, _from, state) do
+    response = call_port(state, :repository_list_branches, {path})
+    {:reply, response, state}
+  end
+
   defp call_port(state, command, arguments, timeout \\ 40000) do
     msg = {command, arguments}
     send(state.port, {self(), {:command, :erlang.term_to_binary(msg)}})

@@ -34,4 +34,8 @@ defmodule Gixir.Repository do
       error -> error
     end
   end
+
+  def list_branches(repo) do
+    GenServer.call(repo.gixir_pid, {:repository_list_branches, repo.path})
+  end
 end

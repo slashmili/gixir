@@ -17,6 +17,7 @@ static struct request_handler request_handlers[] = {
     { "ping", handle_ping },
     { "repository_init_at", handle_repository_init_at },
     { "repository_open", handle_repository_open },
+    { "repository_list_branches", handle_repository_list_branches },
     { NULL, NULL }
 };
 
