@@ -7,6 +7,7 @@
 #include "erlcmd.h"
 #include "erlcmd_helper.h"
 #include <pthread.h>
+#include "git2_headers.h"
 
 
 struct request_handler {
@@ -17,3 +18,4 @@ struct request_handler {
 void handle_elixir_request(const char *req, void *cookie);
 void send_error_response(const char *reason);
 void send_error_response_with_message(const char *reason, const char *reason_message);
+git_repository *global_repo = NULL;

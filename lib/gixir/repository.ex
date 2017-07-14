@@ -37,7 +37,7 @@ defmodule Gixir.Repository do
   end
 
   def branches(repo) do
-    with {:ok, branches} <- GenServer.call(repo.gixir_pid, {:repository_list_branches, {repo.path}}) do
+    with {:ok, branches} <- GenServer.call(repo.gixir_pid, {:repository_list_branches, {}}) do
       branches
       |> Enum.map(fn b -> Branch.build_struct(repo.gixir_pid, repo.path, b) end)
       |> (&({:ok, &1})).()
@@ -50,7 +50,7 @@ defmodule Gixir.Repository do
   """
   def lookup_branch(repo, name, type) do
     branch_type = if(type == :local, do: 1, else: 2)
-    with :ok <- GenServer.call(repo.gixir_pid, {:repository_lookup_branch, {repo.path, name, branch_type}}) do
+    with :ok <- GenServer.call(repo.gixir_pid, {:repository_lookup_branch, {name, branch_type}}) do
       {:ok, Branch.build_struct(repo.gixir_pid, repo.path, {name, type})}
     end
   end

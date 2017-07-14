@@ -37,6 +37,7 @@ void handle_repository_init_at(const char *req, int *req_index) {
     }
 
     error = git_repository_init(&repo, repo_path, bare);
+    error = git_repository_init(&global_repo, repo_path, bare);
     if (error < 0) {
         const git_error *e = giterr_last();
         send_error_response_with_message("repository_init_at", e->message);
@@ -103,42 +104,17 @@ void handle_repository_list_branches(const char *req, int *req_index) {
 
     int term_size;
     if (ei_decode_tuple_header(req, req_index, &term_size) < 0 ||
-            term_size != 1) {
-        //debug("Failed to parse connect params");
+            term_size != 0) {
         send_error_response("wrong_number_of_args");
         return;
     }
 
-    int term_type;
-    if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
-            term_type != ERL_BINARY_EXT) {
-        send_error_response("cannot_parse_path");
-        return;
-    }
-    uint8_t *repo_path = malloc(term_size);
-    git_repository *repo;
     int error = 0;
-
-
-    long binary_len = 0;
-    if (ei_decode_binary(req, req_index, repo_path, &binary_len) < 0) {
-        send_error_response("cannot_read_path");
-        return;
-    }
-    repo_path[term_size] = NULL;
-
-    error = git_repository_open(&repo, repo_path);
-    if (error < 0) {
-        const git_error *e = giterr_last();
-        send_error_response_with_message("repository_open", e->message);
-        return;
-    }
-
     git_branch_iterator *iter;
     int exception = 0;
     //TODO: pass barnch type filter from elixir
     git_branch_t filter = (GIT_BRANCH_LOCAL | GIT_BRANCH_REMOTE), branch_type;
-    if (git_branch_iterator_new(&iter, repo, filter) < 0) {
+    if (git_branch_iterator_new(&iter, global_repo, filter) < 0) {
         const git_error *e = giterr_last();
         send_error_response_with_message("branch_iterator", e->message);
         return;
@@ -153,7 +129,7 @@ void handle_repository_list_branches(const char *req, int *req_index) {
     }
 
     git_branch_iterator_free(iter);
-    if (git_branch_iterator_new(&iter, repo, filter) < 0) {
+    if (git_branch_iterator_new(&iter, global_repo, filter) < 0) {
         const git_error *e = giterr_last();
         send_error_response_with_message("branch_iterator", e->message);
         return;
@@ -186,16 +162,13 @@ void handle_repository_list_branches(const char *req, int *req_index) {
     erlcmd_send(resp, resp_index);
 
     git_branch_iterator_free(iter);
-    git_repository_free(repo);
-    free(repo_path);
 }
 
 void handle_repository_lookup_branch(const char *req, int *req_index) {
 
     int term_size;
     if (ei_decode_tuple_header(req, req_index, &term_size) < 0 ||
-            term_size != 3) {
-        //debug("Failed to parse connect params");
+            term_size != 2) {
         send_error_response("wrong_number_of_args");
         return;
     }
@@ -206,16 +179,7 @@ void handle_repository_lookup_branch(const char *req, int *req_index) {
         send_error_response("cannot_parse_path");
         return;
     }
-    char *repo_path = malloc(term_size);
     int error = 0;
-
-
-    long binary_len = 0;
-    if (ei_decode_binary(req, req_index, repo_path, &binary_len) < 0) {
-        send_error_response("cannot_read_path");
-        return;
-    }
-    repo_path[term_size] = NULL;
 
     //read branch name
     if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
@@ -226,21 +190,15 @@ void handle_repository_lookup_branch(const char *req, int *req_index) {
     char *branch_name = malloc(term_size);
 
 
+    long binary_len;
     if (ei_decode_binary(req, req_index, branch_name, &binary_len) < 0) {
         send_error_response("cannot_read_name");
         return;
     }
     branch_name[term_size] = NULL;
 
-    git_repository *repo;
-    if (error < git_repository_open(&repo, repo_path)) {
-        const git_error *e = giterr_last();
-        send_error_response_with_message("repository_open", e->message);
-        return;
-    }
-
     git_reference *branch = NULL;
-    if(git_branch_lookup(&branch, repo, branch_name, GIT_BRANCH_LOCAL) < 0) {
+    if(git_branch_lookup(&branch, global_repo, branch_name, GIT_BRANCH_LOCAL) < 0) {
         const git_error *e = giterr_last();
         send_error_response_with_message("lookup_branch", e->message);
         return;
@@ -256,7 +214,4 @@ void handle_repository_lookup_branch(const char *req, int *req_index) {
     ei_encode_atom(resp, &resp_index, "ok");
 
     erlcmd_send(resp, resp_index);
-
-    git_repository_free(repo);
-    free(repo_path);
 }
