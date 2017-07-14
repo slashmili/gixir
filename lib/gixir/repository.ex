@@ -1,6 +1,7 @@
 defmodule Gixir.Repository do
 
-  alias Gixir.Repository
+  alias Gixir.{Repository, Branch}
+  alias Gixir.Index
   defstruct path: nil, gixir_pid: nil
 
   @doc """
@@ -35,7 +36,26 @@ defmodule Gixir.Repository do
     end
   end
 
-  def list_branches(repo) do
-    GenServer.call(repo.gixir_pid, {:repository_list_branches, {repo.path}})
+  def branches(repo) do
+    with {:ok, branches} <- GenServer.call(repo.gixir_pid, {:repository_list_branches, {repo.path}}) do
+      branches
+      |> Enum.map(fn b -> Branch.build_struct(repo.gixir_pid, repo.path, b) end)
+      |> (&({:ok, &1})).()
+    end
+  end
+
+  @doc """
+  Lookup a branch by its name in a repository.
+
+  """
+  def lookup_branch(repo, name, type) do
+    branch_type = if(type == :local, do: 1, else: 2)
+    with :ok <- GenServer.call(repo.gixir_pid, {:repository_lookup_branch, {repo.path, name, branch_type}}) do
+      {:ok, Branch.build_struct(repo.gixir_pid, repo.path, {name, type})}
+    end
+  end
+
+  def index(repo) do
+    %Index{path: repo.path, gixir_pid: repo.gixir_pid}
   end
 end
