@@ -82,6 +82,9 @@ void handle_repository_open(const char *req, int *req_index) {
         return;
     }
 
+    global_repo_path = malloc(term_size);
+    memcpy(global_repo_path, repo_path, term_size);
+
     error = git_repository_open(&global_repo, repo_path);
     if (error < 0) {
         const git_error *e = giterr_last();
