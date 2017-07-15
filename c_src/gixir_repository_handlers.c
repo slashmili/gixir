@@ -1,5 +1,6 @@
 #include "gixir_handlers.h"
 #include "git2_headers.h"
+#include "repo.h"
 
 /*
  * {repo_path, bool}
@@ -20,8 +21,7 @@ void handle_repository_init_at(const char *req, int *req_index) {
         send_error_response("cannot_parse_path");
         return;
     }
-    uint8_t *repo_path = malloc(term_size);
-    git_repository *repo;
+    char *repo_path = malloc(term_size);
     int error = 0;
 
 
@@ -30,13 +30,15 @@ void handle_repository_init_at(const char *req, int *req_index) {
         send_error_response("cannot_read_path");
         return;
     }
+    repo_path[term_size] = NULL;
 
+    global_repo_path = malloc(term_size);
+    memcpy(global_repo_path, repo_path, term_size);
     int bare = 0;
     if(ei_decode_boolean(req, req_index, &bare) <0) {
         send_error_response("cannot_read_bare");
     }
 
-    error = git_repository_init(&repo, repo_path, bare);
     error = git_repository_init(&global_repo, repo_path, bare);
     if (error < 0) {
         const git_error *e = giterr_last();
@@ -44,7 +46,6 @@ void handle_repository_init_at(const char *req, int *req_index) {
         return;
     }
 
-    git_repository_free(repo);
     char resp[256];
     int resp_index = sizeof(uint16_t);
     resp[resp_index++] = response_id;
@@ -72,7 +73,6 @@ void handle_repository_open(const char *req, int *req_index) {
         return;
     }
     uint8_t *repo_path = malloc(term_size);
-    git_repository *repo;
     int error = 0;
 
 
@@ -82,14 +82,13 @@ void handle_repository_open(const char *req, int *req_index) {
         return;
     }
 
-    error = git_repository_open(&repo, repo_path);
+    error = git_repository_open(&global_repo, repo_path);
     if (error < 0) {
         const git_error *e = giterr_last();
         send_error_response_with_message("repository_open", e->message);
         return;
     }
 
-    git_repository_free(repo);
     char resp[256];
     int resp_index = sizeof(uint16_t);
     resp[resp_index++] = response_id;
@@ -212,6 +211,33 @@ void handle_repository_lookup_branch(const char *req, int *req_index) {
     ei_encode_version(resp, &resp_index);
 
     ei_encode_atom(resp, &resp_index, "ok");
+
+    erlcmd_send(resp, resp_index);
+}
+
+void handle_repository_workdir(const char *req, int *req_index) {
+
+    int term_size;
+    if (ei_decode_tuple_header(req, req_index, &term_size) < 0 ||
+            term_size != 0) {
+        send_error_response("wrong_number_of_args");
+        return;
+    }
+
+    if(git_repository_is_bare(global_repo)) {
+        send_error_response("repo_is_bare");
+        return;
+    }
+    char resp[256];
+    int resp_index = sizeof(uint16_t);
+    resp[resp_index++] = response_id;
+
+    ei_encode_version(resp, &resp_index);
+
+    ei_encode_tuple_header(resp, &resp_index, 2);
+    ei_encode_atom(resp, &resp_index, "ok");
+
+    ei_encode_binary(resp, &resp_index, global_repo_path, strlen(global_repo_path));
 
     erlcmd_send(resp, resp_index);
 }

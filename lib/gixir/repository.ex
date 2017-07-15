@@ -55,6 +55,15 @@ defmodule Gixir.Repository do
     end
   end
 
+  @doc """
+  Get the path of the working directory for this repository
+
+    iex>{:ok, repo_path} = Repository.workdir(repo)
+  """
+  def workdir(repo) do
+    GenServer.call(repo.gixir_pid, {:repository_workdir, {}})
+  end
+
   def index(repo) do
     %Index{path: repo.path, gixir_pid: repo.gixir_pid}
   end

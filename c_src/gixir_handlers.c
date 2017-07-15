@@ -20,6 +20,7 @@ static struct request_handler request_handlers[] = {
     { "repository_open", handle_repository_open },
     { "repository_list_branches", handle_repository_list_branches },
     { "repository_lookup_branch", handle_repository_lookup_branch },
+    { "repository_workdir", handle_repository_workdir },
     { "blob_from_workdir", handle_blob_from_workdir },
     { NULL, NULL }
 };

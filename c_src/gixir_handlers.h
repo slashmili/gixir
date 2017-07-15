@@ -1,3 +1,6 @@
+#ifndef _GIXIR_HANDLERS_H
+#define _GIXIR_HANDLERS_H
+
 #include <stddef.h>
 #include <stdint.h>
 #include <ei.h>
@@ -18,4 +21,4 @@ struct request_handler {
 void handle_elixir_request(const char *req, void *cookie);
 void send_error_response(const char *reason);
 void send_error_response_with_message(const char *reason, const char *reason_message);
-git_repository *global_repo = NULL;
+#endif

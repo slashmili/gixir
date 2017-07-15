@@ -1,6 +1,7 @@
 defmodule Gixir.Branch.Test do
   use ExUnit.Case
-  doctest Gixir
+  alias Gixir.Repository
+  import Gixir.TestHelper
 
   defp get_random_repo_path do
   name = :crypto.strong_rand_bytes(9) |> Base.encode16(case: :lower)
@@ -8,8 +9,8 @@ defmodule Gixir.Branch.Test do
   end
 
   test "get list of branches" do
-    repo_path = get_random_repo_path()
-    {:ok, repo} = Gixir.Repository.init_at(repo_path)
+    {:ok, repo} = repo_fixture()
+    {:ok, repo_path} = Repository.workdir(repo)
     System.cmd("touch", ["README.md"], [cd: repo_path])
     System.cmd("git", ["add", "README.md"], [cd: repo_path])
     System.cmd("git", ["commit", "-m", "init"], [cd: repo_path])
