@@ -20,8 +20,8 @@ defmodule Gixir.Branch.Test do
   end
 
   test "get specific branch" do
-    repo_path = get_random_repo_path()
-    {:ok, repo} = Gixir.Repository.init_at(repo_path)
+    {:ok, repo} = repo_fixture()
+    {:ok, repo_path} = Repository.workdir(repo)
     System.cmd("touch", ["README.md"], [cd: repo_path])
     System.cmd("git", ["add", "README.md"], [cd: repo_path])
     System.cmd("git", ["commit", "-m", "init"], [cd: repo_path])
@@ -31,8 +31,8 @@ defmodule Gixir.Branch.Test do
   end
 
   test "try to get invalid branch" do
-    repo_path = get_random_repo_path()
-    {:ok, repo} = Gixir.Repository.init_at(repo_path)
+    {:ok, repo} = repo_fixture()
+    {:ok, repo_path} = Repository.workdir(repo)
     assert {:error, {:lookup_branch, "Cannot locate local branch 'master'"}} = Gixir.Repository.lookup_branch(repo, "master", :local)
   end
 end

@@ -1,6 +1,5 @@
 defmodule Gixir.RepositoryTest do
   use ExUnit.Case
-  doctest Gixir
 
   defp get_random_repo_path do
   name = :crypto.strong_rand_bytes(9) |> Base.encode16(case: :lower)
