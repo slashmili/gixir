@@ -1,6 +1,6 @@
 #include "gixir_handlers.h"
 #include "git2_headers.h"
-#include "repo.h"
+#include "gixir_vars.h"
 
 /*
  * {repo_path, bool}
@@ -38,7 +38,6 @@ void handle_repository_init_at(const char *req, int *req_index) {
     if(ei_decode_boolean(req, req_index, &bare) <0) {
         send_error_response("cannot_read_bare");
     }
-
     error = git_repository_init(&global_repo, repo_path, bare);
     if (error < 0) {
         const git_error *e = giterr_last();
