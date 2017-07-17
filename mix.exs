@@ -4,7 +4,7 @@ defmodule Gixir.Mixfile do
   def project do
     [app: :gixir,
      version: "0.1.0",
-     elixir: "~> 1.4",
+     elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      compilers: [:elixir_make] ++ Mix.compilers,
