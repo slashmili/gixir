@@ -8,13 +8,17 @@
 # LDFLAGS	linker flags for linking all binaries
 # ERL_LDFLAGS	additional linker flags for projects referencing Erlang libraries
 
-LDFLAGS += -lgit2
 CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter
 CFLAGS += -std=c99 -D_GNU_SOURCE
 CC ?= $(CROSSCOMPILER)gcc
 
+ifdef LIBGIT2
+CFLAGS  += -I$(LIBGIT2)/include/
+LDFLAGS += -L$(LIBGIT2)/lib/ -lgit2
+else
 CFLAGS  += $(shell pkg-config libgit2 --cflags)
 LDFLAGS += $(shell pkg-config libgit2 --libs)
+endif
 
 ###################
 # By default, log messages are appended to nerves_uart.log.

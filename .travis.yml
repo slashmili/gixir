@@ -4,6 +4,8 @@ elixir:
   - 1.3.0
   - 1.4.5
 
+cache: ~/libgit2
+
 os:
   - linux
 
@@ -15,11 +17,7 @@ addons:
     - libssh2-1-dev
     - cmake
 
-git:
-  submodules: false
+env: LIBGIT2=~/libgit2/_install/
 
 before_install:
-  - git submodule update --init
-  - cd test/libgit2
-  - cmake .
-  - cmake --build . --target install
+  - "./scripts/travisbuild.sh"
