@@ -32,7 +32,7 @@ void handle_blob_from_workdir(const char *req, int *req_index) {
         send_error_response("cannot_read_path");
         return;
     }
-    repo_path[binary_len] = NULL;
+    repo_path[binary_len] = '\0';
 
     if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
             term_type != ERL_BINARY_EXT) {
@@ -45,7 +45,7 @@ void handle_blob_from_workdir(const char *req, int *req_index) {
         send_error_response("cannot_read_file_path");
         return;
     }
-    file_path[binary_len] = NULL;
+    file_path[binary_len] = '\0';
 
 
     error = git_repository_open(&repo, repo_path);

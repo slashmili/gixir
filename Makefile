@@ -13,6 +13,9 @@ CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter
 CFLAGS += -std=c99 -D_GNU_SOURCE
 CC ?= $(CROSSCOMPILER)gcc
 
+CFLAGS  += $(shell pkg-config libgit2 --cflags)
+LDFLAGS += $(shell pkg-config libgit2 --libs)
+
 ###################
 # By default, log messages are appended to nerves_uart.log.
 # See src/nerves_uart.c to change this. Be sure to rebuild everything by invoking
@@ -59,7 +62,7 @@ OBJ=$(SRC:.c=.o)
 all: priv priv/gixir
 
 %.o: %.c
-	$(CC) -c $(ERL_CFLAGS) $(CFLAGS) -o $@ $<
+	$(CC) -c  $(ERL_CFLAGS) $(CFLAGS) -o $@ $<
 
 priv:
 	mkdir -p priv

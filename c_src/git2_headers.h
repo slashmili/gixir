@@ -1,3 +1,4 @@
+#include <git2/repository.h>
 #include <git2/sys/repository.h>
 #include <git2/sys/odb_backend.h>
 #include <git2/sys/refdb_backend.h>
@@ -5,3 +6,5 @@
 #include <git2/refs.h>
 #include <git2/buffer.h>
 #include <git2/branch.h>
+#include <git2/blob.h>
+#include <git2/commit.h>
