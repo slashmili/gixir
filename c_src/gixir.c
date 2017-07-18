@@ -2,12 +2,14 @@
 #include "util.h"
 #include "gixir_handlers.h"
 #include "erlcmd.h"
+#include <git2/global.h>
 
 #include <poll.h>
 #include <unistd.h>
 
 void main_loop() {
 
+    git_libgit2_init();
     struct erlcmd *handler = malloc(sizeof(struct erlcmd));
     erlcmd_init(handler, handle_elixir_request, NULL);
     for (;;) {
