@@ -80,6 +80,7 @@ void handle_repository_open(const char *req, int *req_index) {
         send_error_response("cannot_read_path");
         return;
     }
+    repo_path[term_size] = '\0';
 
     global_repo_path = malloc(term_size);
     memcpy(global_repo_path, repo_path, term_size);
