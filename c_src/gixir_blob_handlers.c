@@ -39,7 +39,7 @@ void handle_blob_from_workdir(const char *req, int *req_index) {
         send_error_response("cannot_parse_file_path");
         return;
     }
-    uint8_t *file_path = malloc(term_size);
+    char *file_path = malloc(term_size);
 
     if (ei_decode_binary(req, req_index, file_path, &binary_len) < 0) {
         send_error_response("cannot_read_file_path");
@@ -65,7 +65,7 @@ void handle_blob_from_workdir(const char *req, int *req_index) {
     }
 
     char out[40];
-    git_oid_fmt(out, oid.id);
+    git_oid_fmt(out, &oid);
 
     git_repository_free(repo);
     //git_tree_free(oid);
