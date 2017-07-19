@@ -2,6 +2,7 @@
 #include "gixir_repository_handlers.h"
 #include "gixir_blob_handlers.h"
 #include "gixir_branch_handlers.h"
+#include "gixir_tree_handlers.h"
 
 
 static void handle_ping(const char *req, int *req_index) {
@@ -24,6 +25,7 @@ static struct request_handler request_handlers[] = {
     { "repository_workdir", handle_repository_workdir },
     { "blob_from_workdir", handle_blob_from_workdir },
     { "branch_target", handle_branch_target },
+    { "tree_lookup", handle_tree_lookup },
     { NULL, NULL }
 };
 
