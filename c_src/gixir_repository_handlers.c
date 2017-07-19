@@ -139,7 +139,7 @@ void handle_repository_list_branches(const char *req, int *req_index) {
 
 
     //TODO: return list of branch names
-    char resp[256];
+    char resp[10000];
     int resp_index = sizeof(uint16_t);
     resp[resp_index++] = response_id;
 

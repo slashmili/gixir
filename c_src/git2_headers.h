@@ -8,3 +8,4 @@
 #include <git2/branch.h>
 #include <git2/blob.h>
 #include <git2/commit.h>
+#include <git2/tree.h>
