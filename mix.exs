@@ -4,11 +4,17 @@ defmodule Gixir.Mixfile do
   def project do
     [app: :gixir,
      version: "0.1.0",
-     elixir: "~> 1.4",
+     elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     compilers: [:elixir_make] ++ Mix.compilers,
+     elixirc_paths: elixirc_paths(Mix.env),
      deps: deps()]
   end
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_),     do: ["lib"]
 
   # Configuration for the OTP application
   #
@@ -28,6 +34,9 @@ defmodule Gixir.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      {:elixir_make, "~> 0.4", runtime: false},
+      {:ex_unit_notifier, "~> 0.1", only: :test}
+    ]
   end
 end

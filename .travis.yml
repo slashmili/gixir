@@ -1,0 +1,23 @@
+sudo: false
+language: elixir
+elixir:
+  - 1.3.0
+  - 1.4.5
+
+cache: ~/libgit2
+
+os:
+  - linux
+
+dist: trusty
+
+addons:
+  apt:
+    packages:
+    - libssh2-1-dev
+    - cmake
+
+env: LIBGIT2=~/libgit2/_install/ LD_LIBRARY_PATH=~/libgit2/_install/lib
+
+before_install:
+  - "./scripts/travisbuild.sh"
