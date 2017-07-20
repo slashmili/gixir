@@ -17,7 +17,6 @@ void handle_tree_lookup(const char *req, int *req_index) {
         return;
     }
 
-    //read branch name
     if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
             term_type != ERL_BINARY_EXT) {
         send_error_response("cannot_tree_oid");
@@ -74,4 +73,120 @@ void handle_tree_lookup(const char *req, int *req_index) {
     erlcmd_send(resp, resp_index);
     free(resp);
     free(tree_oid_str);
+}
+
+void handle_tree_lookup_bypath(const char *req, int *req_index) {
+    int term_size;
+    if (ei_decode_tuple_header(req, req_index, &term_size) < 0 ||
+            term_size != 2) {
+        send_error_response("wrong_number_of_args");
+        return;
+    }
+
+    int term_type;
+    long binary_len;
+
+    if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
+            term_type != ERL_BINARY_EXT) {
+        send_error_response("cannot_tree_oid");
+        return;
+    }
+
+    if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
+            term_type != ERL_BINARY_EXT) {
+        send_error_response("cannot_tree_oid");
+        return;
+    }
+    char *tree_oid_str = malloc(term_size);
+
+
+    if (ei_decode_binary(req, req_index, tree_oid_str, &binary_len) < 0) {
+        send_error_response("cannot_read_name");
+        return;
+    }
+    tree_oid_str[term_size] = '\0';
+
+    if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
+            term_type != ERL_BINARY_EXT) {
+        send_error_response("cannot_tree_path");
+        return;
+    }
+
+    if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
+            term_type != ERL_BINARY_EXT) {
+        send_error_response("cannot_tree_path");
+        return;
+    }
+    char *tree_path_str = malloc(term_size);
+
+
+    if (ei_decode_binary(req, req_index, tree_path_str, &binary_len) < 0) {
+        send_error_response("cannot_read_tree_path");
+        return;
+    }
+    tree_path_str[term_size] = '\0';
+
+    git_tree_entry * path_entry;
+
+
+    git_tree *tree;
+    git_oid tree_oid;
+
+    git_oid_fromstr(&tree_oid, tree_oid_str);
+    if(git_tree_lookup(&tree, global_repo, &tree_oid) < 0) {
+        const git_error *e = giterr_last();
+        send_error_response_with_message("git_tree_lookup", e->message);
+        return;
+    }
+    if(git_tree_entry_bypath(&path_entry, tree, tree_path_str) < 0) {
+        const git_error *e = giterr_last();
+        send_error_response_with_message("git_tree_lookup", e->message);
+        return;
+    }
+
+    git_tree_free(tree);
+    const git_otype path_entry_type = git_tree_entry_type(path_entry);
+    if(path_entry_type == GIT_OBJ_BLOB) {
+        send_error_response("file");
+        return;
+    }
+
+    const git_oid * path_entry_oid = git_tree_entry_id(path_entry);
+    git_tree_lookup(&tree, global_repo, path_entry_oid);
+
+    int tree_count = git_tree_entrycount(tree);
+    char * resp = malloc(1000 * tree_count);
+    int resp_index = sizeof(uint16_t);
+    resp[resp_index++] = response_id;
+    ei_encode_version(resp, &resp_index);
+    ei_encode_tuple_header(resp, &resp_index, 2);
+    ei_encode_atom(resp, &resp_index, "ok");
+
+    ei_encode_list_header(resp, &resp_index, tree_count);
+    int i = 0;
+    for (i = 0; i < tree_count; ++i) {
+        const git_tree_entry *entry = git_tree_entry_byindex(tree, i);
+        const char * entry_name = git_tree_entry_name(entry);
+        const git_oid * entry_oid = git_tree_entry_id(entry);
+        const git_otype entry_type = git_tree_entry_type(entry);
+        const git_filemode_t filemode = git_tree_entry_filemode(entry);
+        char entry_id_str[40];
+        ei_encode_tuple_header(resp, &resp_index, 4);
+        ei_encode_binary(resp, &resp_index, entry_name, strlen(entry_name));
+        git_oid_fmt(entry_id_str, entry_oid);
+        ei_encode_binary(resp, &resp_index, entry_id_str, 40);
+        ei_encode_long(resp, &resp_index, filemode);
+        if (entry_type == GIT_OBJ_TREE) {
+            ei_encode_atom(resp, &resp_index, "tree");
+        } else if(entry_type == GIT_OBJ_BLOB) {
+            ei_encode_atom(resp, &resp_index, "blob");
+        } else {
+            ei_encode_atom(resp, &resp_index, "unknown");
+        }
+    }
+    git_tree_free(tree);
+    ei_encode_empty_list(resp, &resp_index);
+    erlcmd_send(resp, resp_index);
+    free(resp);
+    free(tree_path_str);
 }

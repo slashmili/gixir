@@ -22,4 +22,15 @@ defmodule Gixir.Tree do
       {:ok, tree}
     end
   end
+
+  def lookup_bypath(repo, %Tree{} = tree, path) do
+    with {:ok, response} <- GenServer.call(repo, {:tree_lookup_bypath, {tree.oid, path}}) do
+      tree = %Tree{
+        oid: nil,
+        gixir_pid: repo,
+        entries: Enum.map(response, fn e -> TreeEntry.to_struct(repo, e) end)
+      }
+      {:ok, tree}
+    end
+  end
 end
