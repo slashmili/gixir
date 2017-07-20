@@ -53,13 +53,20 @@ void handle_tree_lookup(const char *req, int *req_index) {
         const git_tree_entry *entry = git_tree_entry_byindex(tree, i);
         const char * entry_name = git_tree_entry_name(entry);
         const git_oid * entry_oid = git_tree_entry_id(entry);
+        const git_otype entry_type = git_tree_entry_type(entry);
         char entry_id_str[40];
         ei_encode_tuple_header(resp, &resp_index, 4);
         ei_encode_binary(resp, &resp_index, entry_name, strlen(entry_name));
         git_oid_fmt(entry_id_str, entry_oid);
         ei_encode_binary(resp, &resp_index, entry_id_str, 40);
         ei_encode_long(resp, &resp_index, 33188);
-        ei_encode_atom(resp, &resp_index, "blob");
+        if (entry_type == GIT_OBJ_TREE) {
+            ei_encode_atom(resp, &resp_index, "tree");
+        } else if(entry_type == GIT_OBJ_BLOB) {
+            ei_encode_atom(resp, &resp_index, "blob");
+        } else {
+            ei_encode_atom(resp, &resp_index, "unknown");
+        }
     }
     ei_encode_empty_list(resp, &resp_index);
     erlcmd_send(resp, resp_index);
