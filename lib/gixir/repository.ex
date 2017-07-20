@@ -1,8 +1,6 @@
 defmodule Gixir.Repository do
 
-  alias Gixir.{Repository, Branch}
-  alias Gixir.Index
-  defstruct path: nil, gixir_pid: nil
+  alias Gixir.{Branch, Index}
 
   @doc """
   Initialize a Git repository in `path`. This implies creating all the
@@ -19,27 +17,27 @@ defmodule Gixir.Repository do
   """
   def init_at(path, opts \\ []) do
     bare = Keyword.get(opts, :bare, false)
-    with {:ok, gixir} <- Gixir.start(),
-         :ok <- GenServer.call(gixir, {:repository_init_at, {path, bare}}) do
-      {:ok, %Repository{path: path, gixir_pid: gixir}}
+    with {:ok, pid} <- Gixir.start(),
+         :ok <- GenServer.call(pid, {:repository_init_at, {path, bare}}) do
+      {:ok, pid}
     else
       error -> error
     end
   end
 
   def open(path) do
-    with {:ok, gixir} <- Gixir.start(),
-         :ok <- GenServer.call(gixir, {:repository_open, {path}}) do
-      {:ok, %Repository{path: path, gixir_pid: gixir}}
+    with {:ok, pid} <- Gixir.start(),
+         :ok <- GenServer.call(pid, {:repository_open, {path}}) do
+      {:ok, pid}
     else
       error -> error
     end
   end
 
   def branches(repo) do
-    with {:ok, branches} <- GenServer.call(repo.gixir_pid, {:repository_list_branches, {}}) do
+    with {:ok, branches} <- GenServer.call(repo, {:repository_list_branches, {}}) do
       branches
-      |> Enum.map(fn b -> Branch.build_struct(repo.gixir_pid, repo.path, b) end)
+      |> Enum.map(fn b -> Branch.build_struct(repo, b) end)
       |> (&({:ok, &1})).()
     end
   end
@@ -50,8 +48,8 @@ defmodule Gixir.Repository do
   """
   def lookup_branch(repo, name, type) do
     branch_type = if(type == :local, do: 1, else: 2)
-    with :ok <- GenServer.call(repo.gixir_pid, {:repository_lookup_branch, {name, branch_type}}) do
-      {:ok, Branch.build_struct(repo.gixir_pid, repo.path, {name, type})}
+    with :ok <- GenServer.call(repo, {:repository_lookup_branch, {name, branch_type}}) do
+      {:ok, Branch.build_struct(repo, {name, type})}
     end
   end
 
@@ -61,10 +59,10 @@ defmodule Gixir.Repository do
     iex>{:ok, repo_path} = Repository.workdir(repo)
   """
   def workdir(repo) do
-    GenServer.call(repo.gixir_pid, {:repository_workdir, {}})
+    GenServer.call(repo, {:repository_workdir, {}})
   end
 
   def index(repo) do
-    %Index{path: repo.path, gixir_pid: repo.gixir_pid}
+    %Index{path: "", gixir_pid: repo.gixir_pid}
   end
 end

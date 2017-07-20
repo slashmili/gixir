@@ -2,29 +2,6 @@
 #include "git2_headers.h"
 #include "gixir_vars.h"
 
-static void print_signature(const char *header, const git_signature *sig)
-{
-    char sign;
-    int offset, hours, minutes;
-
-    if (!sig)
-        return;
-
-    offset = sig->when.offset;
-    if (offset < 0) {
-        sign = '-';
-        offset = -offset;
-    } else {
-        sign = '+';
-    }
-
-    hours   = offset / 60;
-    minutes = offset % 60;
-
-    printf("%s %s <%s> %ld %c%02d%02d\n",
-            header, sig->name, sig->email, (long)sig->when.time,
-            sign, hours, minutes);
-}
 void handle_branch_head(const char *req, int *req_index) {
     int term_size;
     if (ei_decode_tuple_header(req, req_index, &term_size) < 0 ||
