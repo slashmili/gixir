@@ -23,8 +23,10 @@ defmodule Gixir.TreeTest do
     assert %TreeEntry{} = entry_1
     assert entry_1.name == "README.md"
     assert entry_1.type == :blob
+    assert entry_1.filemode == 33188
     assert %TreeEntry{} = entry_2
     assert entry_2.name == "src"
     assert entry_2.type == :tree
+    assert entry_1.filemode == 33188
   end
 end
