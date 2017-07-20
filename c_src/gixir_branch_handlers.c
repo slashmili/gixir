@@ -25,7 +25,7 @@ static void print_signature(const char *header, const git_signature *sig)
             header, sig->name, sig->email, (long)sig->when.time,
             sign, hours, minutes);
 }
-void handle_branch_target(const char *req, int *req_index) {
+void handle_branch_head(const char *req, int *req_index) {
     int term_size;
     if (ei_decode_tuple_header(req, req_index, &term_size) < 0 ||
             term_size != 1) {
@@ -60,7 +60,7 @@ void handle_branch_target(const char *req, int *req_index) {
 
     if(git_reference_dwim(&ref, global_repo, branch_name) < 0) {
         const git_error *e = giterr_last();
-        send_error_response_with_message("branch_target", e->message);
+        send_error_response_with_message("branch_head", e->message);
         return;
     }
 
@@ -71,7 +71,7 @@ void handle_branch_target(const char *req, int *req_index) {
     git_commit *commit;
     if(git_commit_lookup(&commit, global_repo, git_reference_target(ref)) < 0){
         const git_error *e = giterr_last();
-        send_error_response_with_message("branch_target", e->message);
+        send_error_response_with_message("branch_head", e->message);
         return;
     }
 

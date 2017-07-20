@@ -24,7 +24,7 @@ static struct request_handler request_handlers[] = {
     { "repository_lookup_branch", handle_repository_lookup_branch },
     { "repository_workdir", handle_repository_workdir },
     { "blob_from_workdir", handle_blob_from_workdir },
-    { "branch_target", handle_branch_target },
+    { "branch_head", handle_branch_head },
     { "tree_lookup", handle_tree_lookup },
     { NULL, NULL }
 };

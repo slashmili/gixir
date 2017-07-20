@@ -12,8 +12,8 @@ defmodule Gixir.TreeTest do
     System.cmd("git", ["add", "README.md"], [cd: repo_path])
     System.cmd("git", ["commit", "-m", "init"], [cd: repo_path])
     {:ok, branch} = Gixir.Repository.lookup_branch(repo, "master", :local)
-    commit = Branch.target(branch)
-    tree = Tree.lookup(repo, commit.tree.oid)
+    {:ok, commit} = Branch.head(branch)
+    {:ok, tree} = Tree.lookup(repo, commit.tree.oid)
     assert %Tree{} = tree
     assert length(tree.entries) == 1
     entry = %TreeEntry{} = List.first(tree.entries)

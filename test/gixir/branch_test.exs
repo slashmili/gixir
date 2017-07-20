@@ -37,7 +37,7 @@ defmodule Gixir.Branch.Test do
     System.cmd("git", ["add", "README.md"], [cd: repo_path])
     System.cmd("git", ["commit", "-m", "init"], [cd: repo_path])
     assert {:ok, branch} = Gixir.Repository.lookup_branch(repo, "master", :local)
-    commit = Branch.target(branch)
+    {:ok, commit} = Branch.head(branch)
     assert %Commit{} = commit
     assert commit.message == "init\n"
     assert byte_size(commit.tree.oid) == 40
