@@ -26,6 +26,7 @@ static struct request_handler request_handlers[] = {
     { "blob_from_workdir", handle_blob_from_workdir },
     { "branch_head", handle_branch_head },
     { "tree_lookup", handle_tree_lookup },
+    { "tree_lookup_bypath", handle_tree_lookup_bypath },
     { NULL, NULL }
 };
 
@@ -84,4 +85,9 @@ void send_error_response_with_message(const char *reason, const char *reason_mes
     ei_encode_atom(resp, &resp_index, reason);
     ei_encode_binary(resp, &resp_index, reason_message, strlen(reason_message));
     erlcmd_send(resp, resp_index);
+}
+
+void send_git_error_response_with_message(const char * title) {
+    const git_error *e = giterr_last();
+    send_error_response_with_message(title, e->message);
 }
