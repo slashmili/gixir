@@ -149,11 +149,15 @@ void handle_tree_lookup_bypath(const char *req, int *req_index) {
         const git_oid * path_entry_oid = git_tree_entry_id(path_entry);
         git_tree_lookup(&tree, global_repo, path_entry_oid);
         int tree_count = git_tree_entrycount(tree);
-        resp = malloc(1000 * tree_count);
+        resp = malloc(2000 * tree_count);
         resp[resp_index++] = response_id;
         ei_encode_version(resp, &resp_index);
-        ei_encode_tuple_header(resp, &resp_index, 2);
+        ei_encode_tuple_header(resp, &resp_index, 3);
         ei_encode_atom(resp, &resp_index, "ok");
+
+        char entry_id_str[40];
+        git_oid_fmt(entry_id_str, path_entry_oid);
+        ei_encode_binary(resp, &resp_index, entry_id_str, 40);
 
         ei_encode_list_header(resp, &resp_index, tree_count);
         int i = 0;

@@ -42,9 +42,9 @@ defmodule Gixir.TreeTest do
     {:ok, %Tree{} = tree} = Tree.lookup(repo, commit.tree.oid)
     assert length(tree.entries) == 2
     [entry_1 , entry_2] = tree.entries
-    #assert entry_2.oid == ""
     {:ok, %Tree{} = tree} = Tree.lookup(repo, entry_2.oid)
     assert length(tree.entries) == 1
+    assert tree.oid == entry_2.oid
 
     {:error, {:git_tree_lookup, err_msg}} = Tree.lookup(repo, entry_1.oid)
     assert err_msg =~ "does not match the type"
@@ -64,6 +64,7 @@ defmodule Gixir.TreeTest do
     [entry_1] = tree.entries
     assert entry_1.name == "code.ex"
     assert entry_1.type == :blob
+    assert tree.oid == entry_2.oid
   end
 
   test "Look up file tree by path" do
@@ -78,6 +79,7 @@ defmodule Gixir.TreeTest do
     {:ok, %TreeEntry{} = entry} = Tree.lookup_bypath(repo, commit.tree, "src/code.ex")
     assert entry.name == "code.ex"
     assert entry.type == :blob
+    assert entry.oid == "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
   end
 
   test "Look up invalid file" do

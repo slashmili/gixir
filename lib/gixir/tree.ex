@@ -14,13 +14,13 @@ defmodule Gixir.Tree do
   """
   def lookup(repo, oid) do
     with {:ok, list_tree_entry} <- GenServer.call(repo, {:tree_lookup, {oid}}) do
-      tree_ok_return(nil, repo, list_tree_entry)
+      tree_ok_return(oid, repo, list_tree_entry)
     end
   end
 
   def lookup_bypath(repo, %Tree{} = tree, path) do
     case GenServer.call(repo, {:tree_lookup_bypath, {tree.oid, path}}) do
-      {:ok, list_tree_entry} when is_list(list_tree_entry) -> tree_ok_return(nil, repo, list_tree_entry)
+      {:ok, oid, list_tree_entry} when is_list(list_tree_entry) -> tree_ok_return(oid, repo, list_tree_entry)
       {:ok, tree_entry} when is_tuple(tree_entry) -> {:ok, TreeEntry.to_struct(repo, tree_entry)}
       o -> o
     end
