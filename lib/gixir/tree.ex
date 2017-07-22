@@ -13,24 +13,25 @@ defmodule Gixir.Tree do
   Lookup a tree object from the repository.
   """
   def lookup(repo, oid) do
-    with {:ok, response} <- GenServer.call(repo, {:tree_lookup, {oid}}) do
-      tree = %Tree{
-        oid: oid,
-        gixir_pid: repo,
-        entries: Enum.map(response, fn e -> TreeEntry.to_struct(repo, e) end)
-      }
-      {:ok, tree}
+    with {:ok, list_tree_entry} <- GenServer.call(repo, {:tree_lookup, {oid}}) do
+      tree_ok_return(nil, repo, list_tree_entry)
     end
   end
 
   def lookup_bypath(repo, %Tree{} = tree, path) do
-    with {:ok, response} <- GenServer.call(repo, {:tree_lookup_bypath, {tree.oid, path}}) do
-      tree = %Tree{
-        oid: nil,
-        gixir_pid: repo,
-        entries: Enum.map(response, fn e -> TreeEntry.to_struct(repo, e) end)
-      }
-      {:ok, tree}
+    case GenServer.call(repo, {:tree_lookup_bypath, {tree.oid, path}}) do
+      {:ok, list_tree_entry} when is_list(list_tree_entry) -> tree_ok_return(nil, repo, list_tree_entry)
+      {:ok, tree_entry} when is_tuple(tree_entry) -> {:ok, TreeEntry.to_struct(repo, tree_entry)}
+      o -> o
     end
+  end
+
+  defp tree_ok_return(oid, repo, response) do
+    tree = %Tree{
+      oid: oid,
+      gixir_pid: repo,
+      entries: Enum.map(response, fn e -> TreeEntry.to_struct(repo, e) end)
+    }
+    {:ok, tree}
   end
 end

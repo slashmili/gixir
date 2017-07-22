@@ -21,4 +21,5 @@ struct request_handler {
 void handle_elixir_request(const char *req, void *cookie);
 void send_error_response(const char *reason);
 void send_error_response_with_message(const char *reason, const char *reason_message);
+void send_git_error_response_with_message(const char * title);
 #endif
