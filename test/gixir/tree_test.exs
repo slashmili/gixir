@@ -9,7 +9,7 @@ defmodule Gixir.TreeTest do
     {:ok, repo_path} = Repository.workdir(repo)
     System.cmd("touch", ["README.md"], [cd: repo_path])
     System.cmd("mkdir", ["src"], [cd: repo_path])
-    System.cmd("touch", ["src/code.ex"], [cd: repo_path])
+    System.cmd("touch", ["src/code.src"], [cd: repo_path])
     System.cmd("git", ["add", "README.md"], [cd: repo_path])
     System.cmd("git", ["add", "src"], [cd: repo_path])
     System.cmd("git", ["commit", "-m", "init"], [cd: repo_path])
@@ -62,7 +62,7 @@ defmodule Gixir.TreeTest do
     assert entry_2.type == :tree
     {:ok, tree} = Tree.lookup_bypath(repo, commit.tree, "src")
     [entry_1] = tree.entries
-    assert entry_1.name == "code.ex"
+    assert entry_1.name == "code.src"
     assert entry_1.type == :blob
     assert tree.oid == entry_2.oid
   end
@@ -76,8 +76,8 @@ defmodule Gixir.TreeTest do
     [_, entry_2] = tree.entries
     assert entry_2.name == "src"
     assert entry_2.type == :tree
-    {:ok, %TreeEntry{} = entry} = Tree.lookup_bypath(repo, commit.tree, "src/code.ex")
-    assert entry.name == "code.ex"
+    {:ok, %TreeEntry{} = entry} = Tree.lookup_bypath(repo, commit.tree, "src/code.src")
+    assert entry.name == "code.src"
     assert entry.type == :blob
     assert entry.oid == "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
   end

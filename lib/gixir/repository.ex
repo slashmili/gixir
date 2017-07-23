@@ -63,6 +63,6 @@ defmodule Gixir.Repository do
   end
 
   def index(repo) do
-    %Index{path: "", gixir_pid: repo.gixir_pid}
+    %Index{gixir_pid: repo}
   end
 end

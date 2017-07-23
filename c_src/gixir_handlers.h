@@ -11,6 +11,7 @@
 #include "erlcmd_helper.h"
 #include <pthread.h>
 #include "git2_headers.h"
+#include "erldecode_helper.h"
 
 
 struct request_handler {
