@@ -6,34 +6,19 @@
 void erl_send_tree_entery(char * resp, int * resp_index, const git_tree_entry *entry);
 
 void handle_tree_lookup(const char *req, int *req_index) {
-    int term_size;
-    if (ei_decode_tuple_header(req, req_index, &term_size) < 0 ||
-            term_size != 1) {
+
+    char *tree_oid_str = NULL;
+    long binary_len;
+
+    if(erl_decode_validate_number_args(req, req_index, 1) <0 ) {
         send_error_response("wrong_number_of_args");
         return;
     }
 
-    int term_type;
-    if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
-            term_type != ERL_BINARY_EXT) {
-        send_error_response("cannot_tree_oid");
+    if (erl_validate_and_decode_string(req, req_index, &tree_oid_str, &binary_len) < 0) {
+        send_error_response("cannot_read_file_path");
         return;
     }
-
-    if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
-            term_type != ERL_BINARY_EXT) {
-        send_error_response("cannot_tree_oid");
-        return;
-    }
-    char *tree_oid_str = malloc(term_size);
-
-
-    long binary_len;
-    if (ei_decode_binary(req, req_index, tree_oid_str, &binary_len) < 0) {
-        send_error_response("cannot_read_name");
-        return;
-    }
-    tree_oid_str[term_size] = '\0';
 
     git_tree *tree;
     git_oid tree_oid;
@@ -69,55 +54,24 @@ void handle_tree_lookup(const char *req, int *req_index) {
 }
 
 void handle_tree_lookup_bypath(const char *req, int *req_index) {
-    int term_size;
-    if (ei_decode_tuple_header(req, req_index, &term_size) < 0 ||
-            term_size != 2) {
+    long binary_len;
+    char *tree_oid_str = NULL;
+    char *tree_path_str = NULL;
+
+    if(erl_decode_validate_number_args(req, req_index, 2) <0 ) {
         send_error_response("wrong_number_of_args");
         return;
     }
 
-    int term_type;
-    long binary_len;
-
-    if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
-            term_type != ERL_BINARY_EXT) {
-        send_error_response("cannot_tree_oid");
+    if (erl_validate_and_decode_string(req, req_index, &tree_oid_str, &binary_len) < 0) {
+        send_error_response("cannot_read_tree_oid");
         return;
     }
 
-    if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
-            term_type != ERL_BINARY_EXT) {
-        send_error_response("cannot_tree_oid");
-        return;
-    }
-    char *tree_oid_str = malloc(term_size);
-
-
-    if (ei_decode_binary(req, req_index, tree_oid_str, &binary_len) < 0) {
-        send_error_response("cannot_read_name");
-        return;
-    }
-    tree_oid_str[term_size] = '\0';
-
-    if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
-            term_type != ERL_BINARY_EXT) {
-        send_error_response("cannot_tree_path");
-        return;
-    }
-
-    if (ei_get_type(req, req_index, &term_type, &term_size) < 0 ||
-            term_type != ERL_BINARY_EXT) {
-        send_error_response("cannot_tree_path");
-        return;
-    }
-    char *tree_path_str = malloc(term_size);
-
-
-    if (ei_decode_binary(req, req_index, tree_path_str, &binary_len) < 0) {
+    if (erl_validate_and_decode_string(req, req_index, &tree_path_str, &binary_len) < 0) {
         send_error_response("cannot_read_tree_path");
         return;
     }
-    tree_path_str[term_size] = '\0';
 
     git_tree_entry * path_entry;
 
@@ -171,6 +125,7 @@ void handle_tree_lookup_bypath(const char *req, int *req_index) {
     erlcmd_send(resp, resp_index);
     free(resp);
     free(tree_path_str);
+    free(tree_oid_str);
     git_tree_entry_free(path_entry);
 }
 

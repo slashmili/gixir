@@ -2,7 +2,7 @@ defmodule Gixir.IndexTest do
   use ExUnit.Case
   import Gixir.TestHelper
 
-  alias Gixir.{Repository, Index, Blob}
+  alias Gixir.{Repository, Index}
 
   test "write a file to index" do
     {:ok, repo} = repo_fixture()
