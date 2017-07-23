@@ -230,7 +230,10 @@ void handle_repository_workdir(const char *req, int *req_index) {
         send_error_response("repo_is_bare");
         return;
     }
-    char resp[256];
+
+    const char * wdir = git_repository_workdir(global_repo);
+
+    char resp[1000];
     int resp_index = sizeof(uint16_t);
     resp[resp_index++] = response_id;
 
@@ -239,7 +242,7 @@ void handle_repository_workdir(const char *req, int *req_index) {
     ei_encode_tuple_header(resp, &resp_index, 2);
     ei_encode_atom(resp, &resp_index, "ok");
 
-    ei_encode_binary(resp, &resp_index, global_repo_path, strlen(global_repo_path));
+    ei_encode_binary(resp, &resp_index, wdir, strlen(wdir));
 
     erlcmd_send(resp, resp_index);
 }
