@@ -15,6 +15,7 @@ defmodule Gixir.IndexTest do
     :ok = Index.add(index, "README.md")
     {:ok, commit_tree} = Index.write_tree(index)
     assert byte_size(commit_tree) == 40
+    assert commit_tree == "444a8fa98e219b9ee8585973bba9425676aba452"
     assert :ok == Index.write(index)
   end
 end
