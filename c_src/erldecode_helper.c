@@ -41,7 +41,7 @@ int erl_validate_and_decode_string(const char *req, int *req_index, char **out, 
     if(erl_decode_validate_binary(req, req_index, &term_size) < 0) {
         return -1;
     }
-    str = (char*) malloc(term_size);
+    str = (char*) malloc(term_size  * sizeof(char));
     if (ei_decode_binary(req, req_index, str, binary_len) < 0) {
         return -1;
     }

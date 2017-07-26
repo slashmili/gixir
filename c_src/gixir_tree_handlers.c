@@ -50,7 +50,7 @@ void handle_tree_lookup(const char *req, int *req_index) {
     ei_encode_empty_list(resp, &resp_index);
     erlcmd_send(resp, resp_index);
     free(resp);
-    free(tree_oid_str);
+    //free(tree_oid_str);
 }
 
 void handle_tree_lookup_bypath(const char *req, int *req_index) {
@@ -79,7 +79,10 @@ void handle_tree_lookup_bypath(const char *req, int *req_index) {
     git_tree *tree;
     git_oid tree_oid;
 
-    git_oid_fromstr(&tree_oid, tree_oid_str);
+    if(git_oid_fromstr(&tree_oid, tree_oid_str) <0) {
+        send_git_error_response_with_message("git_oid_fromstr");
+        return;
+    }
     if(git_tree_lookup(&tree, global_repo, &tree_oid) < 0) {
         send_git_error_response_with_message("git_tree_lookup");
         return;
@@ -125,7 +128,7 @@ void handle_tree_lookup_bypath(const char *req, int *req_index) {
     erlcmd_send(resp, resp_index);
     free(resp);
     free(tree_path_str);
-    free(tree_oid_str);
+    //free(tree_oid_str);
     git_tree_entry_free(path_entry);
 }
 
