@@ -74,3 +74,42 @@ int erl_validate_and_decode_int(const char *req, int *req_index, int * out) {
     *out = long_out;
     return 0;
 }
+
+int erl_validate_and_decode_signature(const char *req, int *req_index, git_signature **signature) {
+    int tuple_size;
+    char * name;
+    char * email;
+    int timestamp;
+    int offset;
+    long binary_len;
+
+    if(ei_decode_tuple_header(req, req_index, &tuple_size) < 0) {
+        send_error_response("cannot_read_update_tupe_size");
+        return -1;
+    }
+    if(erl_validate_and_decode_string(req, req_index, &name, &binary_len) <0) {
+        send_error_response("cannot_read_name");
+        return -1;
+    }
+
+    if(erl_validate_and_decode_string(req, req_index, &email, &binary_len) <0) {
+        send_error_response("cannot_read_email");
+        return -1;
+    }
+
+    if(erl_validate_and_decode_int(req, req_index, &timestamp) <0) {
+        send_error_response("cannot_read_timestamp");
+        return -1;
+    }
+
+    if(erl_validate_and_decode_int(req, req_index, &offset) <0) {
+        send_error_response("cannot_read_offset");
+        return -1;
+    }
+
+    git_signature_new(signature, name, email, timestamp, offset);
+
+    free(name);
+    free(email);
+    return 0;
+}
