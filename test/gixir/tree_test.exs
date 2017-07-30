@@ -41,7 +41,7 @@ defmodule Gixir.TreeTest do
     {:ok, commit} = Branch.head(branch)
     {:ok, %Tree{} = tree} = Tree.lookup(repo, commit.tree.oid)
     assert length(tree.entries) == 2
-    [entry_1 , entry_2] = tree.entries
+    [_entry_1 , entry_2] = tree.entries
     {:ok, %Tree{} = tree} = Tree.lookup(repo, entry_2.oid)
     assert length(tree.entries) == 1
     assert tree.oid == entry_2.oid
