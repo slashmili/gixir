@@ -16,6 +16,7 @@ void handle_commit_create(const char *req, int *req_index) {
     long binary_len;
     const git_commit **parents = NULL;
     char commit_oid_str[40];
+    int i = 0;
 
     if(erl_decode_validate_number_args(req, req_index, 7) <0 ) {
         send_error_response("wrong_number_of_args");
@@ -52,6 +53,37 @@ void handle_commit_create(const char *req, int *req_index) {
         return;
     }
 
+    parents = calloc(parent_count, sizeof(void *));
+    if(parent_count > 0) {
+        int term_size;
+        if(erl_decode_validate_list(req, req_index, &term_size) < 0) {
+            send_error_response("cannot_read_parent_list");
+            return;
+        }
+        int arity;
+        ei_decode_list_header(req, req_index, &arity);
+        if(arity != parent_count) {
+            send_error_response("cannot_read_enough_parent_id");
+            return;
+        }
+        for(i = 0; i< arity; i++) {
+            char * parent_id = NULL;
+            git_oid oid;
+            git_commit *parent = NULL;
+            erl_validate_and_decode_string(req, req_index, &parent_id, &binary_len);
+            if (git_oid_fromstr(&oid, parent_id) < GIT_OK) {
+                send_git_error_response_with_message("git_oid_fromstr");
+                return;
+            }
+            if(git_commit_lookup(&parent, global_repo, &oid) < GIT_OK) {
+                send_git_error_response_with_message("git_commit_lookup");
+                return;
+            }
+            parents[i] = parent;
+            free(parent_id);
+        }
+    }
+
     if(git_oid_fromstr(&tree_oid, tree_oid_str) <0 ) {
         send_git_error_response_with_message("git_oid_fromstr");
         return;
@@ -63,7 +95,6 @@ void handle_commit_create(const char *req, int *req_index) {
         return;
     }
 
-    parents = calloc(0, sizeof(void *));
     int error = git_commit_create(
             &commit_oid,
             global_repo,
@@ -73,7 +104,7 @@ void handle_commit_create(const char *req, int *req_index) {
             NULL,
             message,
             tree,
-            0,
+            parent_count,
             parents
     );
     if(error < 0) {
@@ -97,6 +128,7 @@ void handle_commit_create(const char *req, int *req_index) {
     ei_encode_binary(resp, &resp_index, new_tree_oid_str, 40);
 
     erlcmd_send(resp, resp_index);
+
     free(resp);
     free(update_ref);
     free(message);
@@ -105,4 +137,8 @@ void handle_commit_create(const char *req, int *req_index) {
     git_signature_free(author);
     git_signature_free(cmtter);
     git_commit_free(commit);
+
+    for (i = 0; i < parent_count; ++i) {
+        git_object_free((git_object *) parents[i]);
+    }
 }
