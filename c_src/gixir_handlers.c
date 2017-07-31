@@ -4,6 +4,7 @@
 #include "gixir_branch_handlers.h"
 #include "gixir_tree_handlers.h"
 #include "gixir_index_handlers.h"
+#include "gixir_commit_handlers.h"
 
 
 static void handle_ping(const char *req, int *req_index) {
@@ -32,6 +33,7 @@ static struct request_handler request_handlers[] = {
     { "index_new", handle_index_new },
     { "index_write_tree", handle_index_write_tree },
     { "index_write", handle_index_write },
+    { "commit_create", handle_commit_create },
     { NULL, NULL }
 };
 

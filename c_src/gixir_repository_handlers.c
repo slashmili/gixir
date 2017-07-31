@@ -21,7 +21,7 @@ void handle_repository_init_at(const char *req, int *req_index) {
         send_error_response("cannot_parse_path");
         return;
     }
-    char *repo_path = malloc(term_size);
+    char *repo_path = malloc((term_size+1) * sizeof(char));
     int error = 0;
 
 
@@ -71,7 +71,7 @@ void handle_repository_open(const char *req, int *req_index) {
         send_error_response("cannot_parse_path");
         return;
     }
-    char *repo_path = malloc(term_size);
+    char *repo_path = malloc((term_size+1) * sizeof(char));
     int error = 0;
 
 
@@ -82,7 +82,7 @@ void handle_repository_open(const char *req, int *req_index) {
     }
     repo_path[term_size] = '\0';
 
-    global_repo_path = malloc(term_size);
+    global_repo_path = malloc((term_size+1) * sizeof(char));
     memcpy(global_repo_path, repo_path, term_size);
 
     error = git_repository_open(&global_repo, repo_path);
@@ -188,7 +188,7 @@ void handle_repository_lookup_branch(const char *req, int *req_index) {
         send_error_response("cannot_parse_name");
         return;
     }
-    char *branch_name = malloc(term_size);
+    char *branch_name = malloc((term_size+1) * sizeof(char));
 
 
     long binary_len;

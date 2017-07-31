@@ -27,6 +27,15 @@ int erl_decode_validate_int(const char *req, int *req_index, int * term_size) {
     return 0;
 }
 
+int erl_decode_validate_list(const char *req, int *req_index, int * term_size) {
+    int term_type;
+    if (ei_get_type(req, req_index, &term_type, term_size) < 0 ||
+            term_type != ERL_LIST_EXT) {
+        return -1;
+    }
+    return 0;
+}
+
 int erl_decode_validate_small_int(const char *req, int *req_index, int * term_size) {
     int term_type;
     if (ei_get_type(req, req_index, &term_type, term_size) < 0 ||
@@ -50,7 +59,7 @@ int erl_validate_and_decode_string(const char *req, int *req_index, char **out, 
     if(erl_decode_validate_binary(req, req_index, &term_size) < 0) {
         return -1;
     }
-    str = (char*) malloc(term_size  * sizeof(char));
+    str = (char*) malloc((term_size+1)  * sizeof(char));
     if (ei_decode_binary(req, req_index, str, binary_len) < 0) {
         return -1;
     }
