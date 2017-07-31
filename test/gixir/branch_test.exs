@@ -27,7 +27,8 @@ defmodule Gixir.Branch.Test do
 
   test "try to get invalid branch" do
     {:ok, repo} = repo_fixture()
-    assert {:error, {:lookup_branch, "Cannot locate local branch 'master'"}} = Gixir.Repository.lookup_branch(repo, "master", :local)
+    assert {:error, {:lookup_branch, erro_msg}} = Gixir.Repository.lookup_branch(repo, "master", :local)
+    assert erro_msg =~ "master"
   end
 
   test "get target of a branch" do

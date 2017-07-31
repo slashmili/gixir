@@ -9,3 +9,5 @@
 #include <git2/blob.h>
 #include <git2/commit.h>
 #include <git2/tree.h>
+#include <git2/index.h>
+#include <git2/signature.h>
