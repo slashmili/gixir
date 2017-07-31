@@ -23,7 +23,7 @@ void handle_branch_head(const char *req, int *req_index) {
         send_error_response("cannot_parse_name");
         return;
     }
-    char *branch_name = malloc(term_size);
+    char *branch_name = malloc((term_size+1) * sizeof(char));
 
 
     long binary_len;

@@ -29,7 +29,7 @@ void handle_blob_from_workdir(const char *req, int *req_index) {
         send_error_response("cannot_parse_file_path");
         return;
     }
-    char *file_path = malloc(term_size);
+    char *file_path = malloc((term_size+1) * sizeof(char));
 
     if (ei_decode_binary(req, req_index, file_path, &binary_len) < 0) {
         send_error_response("cannot_read_file_path");
