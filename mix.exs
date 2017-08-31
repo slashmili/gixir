@@ -7,8 +7,9 @@ defmodule Gixir.Mixfile do
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     compilers: [:elixir_make] ++ Mix.compilers,
+     compilers: [:elixir_make, :rustler] ++ Mix.compilers,
      elixirc_paths: elixirc_paths(Mix.env),
+     rustler_crates: rustler_crates(),
      deps: deps()]
   end
 
@@ -35,8 +36,16 @@ defmodule Gixir.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
+      {:rustler, "~> 0.10.1"},
       {:elixir_make, "~> 0.4", runtime: false},
       {:ex_unit_notifier, "~> 0.1", only: :test}
     ]
+  end
+
+  defp rustler_crates do
+    [gixir: [
+      path: "native/gixir",
+      mode: (if Mix.env == :prod, do: :release, else: :debug),
+    ]]
   end
 end
