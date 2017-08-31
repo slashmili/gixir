@@ -1,12 +1,10 @@
 sudo: false
-language: elixir
-elixir:
-  - 1.3.0
-  - 1.4.5
-  - 1.5.0
+
+language: rust
 
 rust:
-  - 1.19.0
+  - stable
+
 
 cache: ~/libgit2
 
@@ -21,7 +19,19 @@ addons:
     - libssh2-1-dev
     - cmake
 
-env: LIBGIT2=~/libgit2/_install/ LD_LIBRARY_PATH=~/libgit2/_install/lib
+env:
+  - ELIXIR=1.3.4-1 LIBGIT2=~/libgit2/_install/ LD_LIBRARY_PATH=~/libgit2/_install/lib
+  - ELIXIR=1.4.5-1 LIBGIT2=~/libgit2/_install/ LD_LIBRARY_PATH=~/libgit2/_install/lib
+  - ELIXIR=1.5.1-1 LIBGIT2=~/libgit2/_install/ LD_LIBRARY_PATH=~/libgit2/_install/lib
+
 
 before_install:
   - "./scripts/travisbuild.sh"
+  - wget http://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
+  - sudo dpkg -i erlang-solutions_1.0_all.deb
+  - sudo apt-get -qq update
+  - sudo apt-get install -y --no-install-recommends erlang elixir=$ELIXIR
+  - mix local.hex --force
+  - erl -version
+  - elixir --version
+  - mix --version
