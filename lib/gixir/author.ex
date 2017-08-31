@@ -4,6 +4,6 @@ defmodule Gixir.Commit.Author do
   alias Gixir.Commit.Author
   def to_struct({name, email, timestamp, offset}) do
     datetime = %{DateTime.from_unix!(timestamp) | utc_offset: offset * 60, zone_abbr: "", time_zone: ""}
-    %Author{name: name, email: email, datetime: DateTime.from_unix!(timestamp)}
+    %Author{name: name, email: email, datetime: datetime}
   end
 end
