@@ -5,9 +5,6 @@ elixir:
   - 1.4.5
   - 1.5.0
 
-rust:
-  - 1.19.0
-
 cache: ~/libgit2
 
 os:
@@ -21,7 +18,11 @@ addons:
     - libssh2-1-dev
     - cmake
 
-env: LIBGIT2=~/libgit2/_install/ LD_LIBRARY_PATH=~/libgit2/_install/lib
+env: LIBGIT2=~/libgit2/_install/ LD_LIBRARY_PATH=~/libgit2/_install/lib PATH=$HOME/.cargo/bin:$PATH
 
 before_install:
   - "./scripts/travisbuild.sh"
+  - curl -sSf https://build.travis-ci.org/files/rustup-init.sh | sh -s -- --default-toolchain=1.19.0 -y
+  - rustc --version
+  - rustup --version
+  - cargo --version
