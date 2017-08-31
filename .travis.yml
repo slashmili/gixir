@@ -5,6 +5,9 @@ elixir:
   - 1.4.5
   - 1.5.0
 
+rust:
+  - 1.19.0
+
 cache: ~/libgit2
 
 os:
