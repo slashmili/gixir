@@ -5,6 +5,9 @@ elixir:
   - 1.4.5
   - 1.5.0
 
+otp_release:
+  - 20.0
+
 cache: ~/libgit2
 
 os:
@@ -21,7 +24,8 @@ addons:
 env: LIBGIT2=~/libgit2/_install/ LD_LIBRARY_PATH=~/libgit2/_install/lib PATH=$HOME/.cargo/bin:$PATH
 
 before_install:
-  - "./scripts/travisbuild.sh"
+  - kerl list installations
+  - kerl list releases
   - curl -sSf https://build.travis-ci.org/files/rustup-init.sh | sh -s -- --default-toolchain=1.19.0 -y
   - rustc --version
   - rustup --version
