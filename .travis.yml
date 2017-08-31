@@ -30,3 +30,4 @@ before_install:
   - rustc --version
   - rustup --version
   - cargo --version
+  - "./scripts/travisbuild.sh"
