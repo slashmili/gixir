@@ -17,21 +17,11 @@ defmodule Gixir.Repository do
   """
   def init_at(path, opts \\ []) do
     bare = Keyword.get(opts, :bare, false)
-    with {:ok, pid} <- Gixir.start(),
-         :ok <- GenServer.call(pid, {:repository_init_at, {path, bare}}) do
-      {:ok, pid}
-    else
-      error -> error
-    end
+    Gixir.Nif.repo_init_at(path, bare)
   end
 
   def open(path) do
-    with {:ok, pid} <- Gixir.start(),
-         :ok <- GenServer.call(pid, {:repository_open, {path}}) do
-      {:ok, pid}
-    else
-      error -> error
-    end
+    Gixir.Nif.repo_open(path)
   end
 
   def branches(repo) do

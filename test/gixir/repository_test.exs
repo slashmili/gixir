@@ -20,7 +20,7 @@ defmodule Gixir.RepositoryTest do
 
   test "fail on wrong repo path" do
     repo_path = "/tmp1111/asd"
-    {:error, {:repository_init_at, _ }} = Gixir.Repository.init_at(repo_path, bare: true)
+    {:error, -1} = Gixir.Repository.init_at(repo_path, bare: true)
   end
 
   test "open an existing repository" do

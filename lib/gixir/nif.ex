@@ -6,4 +6,7 @@ defmodule Gixir.Nif do
     {:ok, 3}
   """
   def add(_arg1, _arg2), do: exit(:nif_not_loaded)
+  def ping(), do: exit(:nif_not_loaded)
+  def repo_init_at(_arg1, _args2), do: exit(:nif_not_loaded)
+  def repo_open(_arg2), do: exit(:nif_not_loaded)
 end

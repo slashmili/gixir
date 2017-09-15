@@ -12,7 +12,7 @@ defmodule Gixir do
   end
 
   def ping(pid) do
-    GenServer.call(pid, :ping)
+    Gixir.Nif.ping
   end
 
   def init(_) do
