@@ -54,6 +54,6 @@ defmodule Gixir.Repository do
   end
 
   def index(repo) do
-    %Index{gixir_pid: repo}
+    %Index{gixir_ref: repo}
   end
 end

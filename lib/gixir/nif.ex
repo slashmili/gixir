@@ -11,4 +11,8 @@ defmodule Gixir.Nif do
   def repo_open(_arg2), do: exit(:nif_not_loaded)
   def repo_workdir(_repo_ref), do: exit(:nif_not_loaded)
   def repo_list_branches(_repo_ref), do: exit(:nif_not_loaded)
+  def index_new(_repo_ref), do: exit(:nif_not_loaded)
+  def index_add_bypath(_index_ref, _path), do: exit(:nif_not_loaded)
+  def index_write_tree(_index_ref), do: exit(:nif_not_loaded)
+  def index_write(_index_ref), do: exit(:nif_not_loaded)
 end

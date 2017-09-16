@@ -8,12 +8,12 @@ defmodule Gixir.IndexTest do
     {:ok, repo} = repo_fixture()
     {:ok, repo_path} = Repository.workdir(repo)
 
-    {:ok, %Index{} = index} = Index.new(repo)
+    assert {:ok, %Index{} = index} = Index.new(repo)
 
     File.write!(Path.join(repo_path, "README.md"), "hi\n")
 
-    :ok = Index.add(index, "README.md")
-    {:ok, commit_tree} = Index.write_tree(index)
+    assert :ok = Index.add(index, "README.md")
+    assert {:ok, commit_tree} = Index.write_tree(index)
     assert byte_size(commit_tree) == 40
     assert commit_tree == "444a8fa98e219b9ee8585973bba9425676aba452"
     assert :ok == Index.write(index)
