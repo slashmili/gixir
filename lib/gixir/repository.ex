@@ -24,8 +24,9 @@ defmodule Gixir.Repository do
     Gixir.Nif.repo_open(path)
   end
 
+  @spec branches(reference) :: {:ok, list(%Branch{})} | {:error, any()}
   def branches(repo) do
-    with {:ok, branches} <- GenServer.call(repo, {:repository_list_branches, {}}) do
+    with {:ok, branches} <- Gixir.Nif.repo_list_branches(repo) do
       branches
       |> Enum.map(fn b -> Branch.build_struct(repo, b) end)
       |> (&({:ok, &1})).()
@@ -49,7 +50,7 @@ defmodule Gixir.Repository do
     iex>{:ok, repo_path} = Repository.workdir(repo)
   """
   def workdir(repo) do
-    GenServer.call(repo, {:repository_workdir, {}})
+    Gixir.Nif.repo_workdir(repo)
   end
 
   def index(repo) do

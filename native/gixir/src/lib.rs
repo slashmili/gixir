@@ -5,15 +5,20 @@
 extern crate git2;
 
 use rustler::{NifEnv, NifTerm, NifResult, NifEncoder};
-use git2::Repository;
+use rustler::types::atom::NifAtom;
+use git2::{Repository, Branch, Branches, BranchType};
 use rustler::resource::ResourceArc;
 use std::sync::{RwLock,Arc};
+use std::ops::Deref;
+use std::io;
 
 mod atoms {
     rustler_atoms! {
         atom ok;
         atom error;
         atom pong;
+        atom local;
+        atom remote;
         //atom __true__ = "true";
         //atom __false__ = "false";
     }
@@ -24,6 +29,8 @@ rustler_export_nifs! {
     [("add", 2, add),
     ("repo_init_at", 2, repo_init_at),
     ("repo_open", 1, repo_open),
+    ("repo_list_branches", 1, repo_list_branches),
+    ("repo_workdir", 1, repo_workdir),
     ("ping", 0, ping)],
     Some(on_load)
 }
@@ -85,6 +92,52 @@ fn repo_open<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>
         });
 
     Ok((atoms::ok(), resource).encode(env))
+}
+
+
+fn repo_list_branches<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;
+    let repo_handle = repo_arc.deref();
+    let repo_wrapper = repo_handle.repo.read().unwrap();
+    let RepoWrapper(ref repo) = *repo_wrapper;
+
+    let branches = match repo.branches(Some(BranchType::Local)) {
+            Ok(branches) => branches,
+            Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+    let mut v: Vec<(String, NifAtom)> = Vec::new();
+    for (i, elem) in branches.enumerate() {
+        let b = match elem {
+            Ok(b) => b,
+            Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+        };
+        let (branch, btype) = b;
+        let branch_name = match branch.name() {
+            Ok(b_name) => b_name,
+            Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+        };
+        let branch_name = match branch_name {
+            Some(v) => v,
+            None => return Ok((atoms::error(), 2).encode(env)),
+        };
+        if btype == BranchType::Local {
+            v.push((String::from(branch_name), atoms::local()));
+        } else {
+            v.push((String::from(branch_name), atoms::remote()));
+        }
+    }
+
+    Ok((atoms::ok(), v).encode(env))
+}
+
+fn repo_workdir<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;
+    let repo_handle = repo_arc.deref();
+    let repo_wrapper = repo_handle.repo.read().unwrap();
+    let RepoWrapper(ref repo) = *repo_wrapper;
+
+    let path = repo.workdir().unwrap().to_path_buf().into_os_string().into_string().unwrap();
+    Ok((atoms::ok(), path).encode(env))
 }
 
 fn add<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
