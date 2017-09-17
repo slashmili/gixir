@@ -6,7 +6,7 @@ extern crate git2;
 
 use rustler::{NifEnv, NifTerm, NifResult, NifEncoder};
 use rustler::types::atom::NifAtom;
-use git2::{Repository, Branch, Branches, BranchType, Index};
+use git2::{Repository, Branch, Branches, BranchType, Index, Reference};
 use rustler::resource::ResourceArc;
 use std::sync::{RwLock,Arc};
 use std::ops::Deref;
@@ -20,6 +20,10 @@ mod atoms {
         atom pong;
         atom local;
         atom remote;
+        atom branch;
+        atom tag;
+        atom note;
+        atom unknown;
         //atom __true__ = "true";
         //atom __false__ = "false";
     }
@@ -32,6 +36,8 @@ rustler_export_nifs! {
     ("repo_open", 1, repo_open),
     ("repo_list_branches", 1, repo_list_branches),
     ("repo_workdir", 1, repo_workdir),
+    ("repo_lookup_branch", 3, repo_lookup_branch),
+    ("repo_head", 1, repo_head),
     ("index_new", 1, index_new),
     ("index_add_bypath", 2, index_add_bypath),
     ("index_write_tree", 1, index_write_tree),
@@ -100,8 +106,8 @@ fn repo_open<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>
     };
 
     let resource = ResourceArc::new(MyRepo{
-            repo: Arc::new(RwLock::new(RepoWrapper(repo))),
-        });
+        repo: Arc::new(RwLock::new(RepoWrapper(repo))),
+    });
 
     Ok((atoms::ok(), resource).encode(env))
 }
@@ -152,6 +158,75 @@ fn repo_workdir<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<
     Ok((atoms::ok(), path).encode(env))
 }
 
+fn repo_lookup_branch<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;
+    let repo_handle = repo_arc.deref();
+    let repo_wrapper = repo_handle.repo.read().unwrap();
+    let RepoWrapper(ref repo) = *repo_wrapper;
+
+
+    let branch_name: String = try!(args[1].decode());
+    let branch_type: NifAtom = try!(args[2].decode());
+
+    let btype = if branch_type == atoms::local() {
+        BranchType::Local
+    } else {
+        BranchType::Remote
+    };
+
+    let branch = match repo.find_branch(&branch_name, btype) {
+        Ok(branch) => branch,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+
+    let branch_name = match branch.name().unwrap() {
+        Some(v) => v,
+        None => return Ok((atoms::error(), 2).encode(env)),
+    };
+    Ok(atoms::ok().encode(env))
+}
+
+
+fn repo_head<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;
+    let repo_handle = repo_arc.deref();
+    let repo_wrapper = repo_handle.repo.read().unwrap();
+    let RepoWrapper(ref repo) = *repo_wrapper;
+
+    let reference = match repo.head() {
+        Ok(reference) => reference,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+
+    let ref_name = match reference.name() {
+        Some(v) => String::from(v),
+        None => String::from(""),
+    };
+
+    let ref_shorthand = match reference.shorthand() {
+        Some(v) => String::from(v),
+        None => String::from(""),
+    };
+
+    let target = match reference.target() {
+        Some(v) => format!("{}", v),
+        None => return Ok((atoms::error(), 3).encode(env)),
+    };
+
+    let ref_type = if reference.is_branch() {
+        atoms::branch()
+    } else if reference.is_remote() {
+        atoms::remote()
+    } else if reference.is_note() {
+        atoms::note()
+    } else if reference.is_tag() {
+        atoms::tag()
+    } else {
+        atoms::unknown()
+    };
+
+    Ok((atoms::ok(), (ref_name, ref_shorthand), target, ref_type).encode(env))
+}
 
 fn index_new<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
     let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;

@@ -1,11 +1,11 @@
 defmodule Gixir.Index do
-  defstruct gixir_ref: nil, index_ref: nil
+  defstruct gixir_repo_ref: nil, index_ref: nil
 
   alias Gixir.Index
 
   def new(repo) do
     with {:ok, id} <- Gixir.Nif.index_new(repo) do
-      {:ok, %Index{gixir_ref: repo, index_ref: id}}
+      {:ok, %Index{gixir_repo_ref: repo, index_ref: id}}
     end
   end
 
