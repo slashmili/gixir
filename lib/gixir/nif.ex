@@ -17,4 +17,7 @@ defmodule Gixir.Nif do
   def index_add_bypath(_index_ref, _path), do: exit(:nif_not_loaded)
   def index_write_tree(_index_ref), do: exit(:nif_not_loaded)
   def index_write(_index_ref), do: exit(:nif_not_loaded)
+  def commit_lookup(_repo_ref, _oid), do: exit(:nif_not_loaded)
+  def commit_get_message(_repo_ref, _oid), do: exit(:nif_not_loaded)
+  def commit_get_tree_oid(_repo_ref, _oid), do: exit(:nif_not_loaded)
 end

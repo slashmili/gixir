@@ -38,9 +38,11 @@ defmodule Gixir.Branch.Test do
     System.cmd("git", ["commit", "-m", "init"], [cd: repo_path])
     assert {:ok, ref} = Repository.head(repo)
     assert {:ok, target} = Reference.target(ref)
-    assert {:ok, commit} = Commit.lookup(repo, ref)
-    assert %Commit{} = commit
+    assert {:ok, commit} = Commit.lookup(repo, target)
+    assert {:ok, commit} = Commit.get_message(commit)
     assert commit.message == "init\n"
-    assert byte_size(commit.tree.oid) == 40
+
+    assert {:ok, tree} = Commit.get_tree(commit)
+    assert byte_size(tree.oid) == 40
   end
 end

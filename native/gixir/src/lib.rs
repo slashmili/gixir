@@ -6,7 +6,7 @@ extern crate git2;
 
 use rustler::{NifEnv, NifTerm, NifResult, NifEncoder};
 use rustler::types::atom::NifAtom;
-use git2::{Repository, Branch, Branches, BranchType, Index, Reference};
+use git2::{Repository, Branch, Branches, BranchType, Index, Reference, Oid};
 use rustler::resource::ResourceArc;
 use std::sync::{RwLock,Arc};
 use std::ops::Deref;
@@ -42,6 +42,9 @@ rustler_export_nifs! {
     ("index_add_bypath", 2, index_add_bypath),
     ("index_write_tree", 1, index_write_tree),
     ("index_write", 1, index_write),
+    ("commit_lookup", 2, commit_lookup),
+    ("commit_get_message", 2, commit_get_message),
+    ("commit_get_tree_oid", 2, commit_get_tree_oid),
     ("ping", 0, ping)],
     Some(on_load)
 }
@@ -284,6 +287,73 @@ fn index_write<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'
     Ok(atoms::ok().encode(env))
 }
 
+fn commit_lookup<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;
+    let repo_handle = repo_arc.deref();
+    let repo_wrapper = repo_handle.repo.read().unwrap();
+    let RepoWrapper(ref repo) = *repo_wrapper;
+    let oid_str = try!(args[1].decode());
+    let oid  = match Oid::from_str(oid_str) {
+        Ok(oid) => oid,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+
+    };
+
+    let commit = match repo.find_commit(oid) {
+        Ok(commit) => commit,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+
+    Ok(atoms::ok().encode(env))
+}
+
+
+fn commit_get_message<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;
+    let repo_handle = repo_arc.deref();
+    let repo_wrapper = repo_handle.repo.read().unwrap();
+    let RepoWrapper(ref repo) = *repo_wrapper;
+    let oid_str = try!(args[1].decode());
+    let oid  = match Oid::from_str(oid_str) {
+        Ok(oid) => oid,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+
+    };
+
+    let commit = match repo.find_commit(oid) {
+        Ok(commit) => commit,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+
+    let message = match commit.message() {
+        Some(msg) => String::from(msg),
+        None => String::from(""),
+    };
+
+    Ok((atoms::ok(), message).encode(env))
+}
+
+fn commit_get_tree_oid<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;
+    let repo_handle = repo_arc.deref();
+    let repo_wrapper = repo_handle.repo.read().unwrap();
+    let RepoWrapper(ref repo) = *repo_wrapper;
+    let oid_str = try!(args[1].decode());
+    let oid  = match Oid::from_str(oid_str) {
+        Ok(oid) => oid,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+
+    };
+
+    let commit = match repo.find_commit(oid) {
+        Ok(commit) => commit,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+
+    let tree_oid = format!("{}", commit.tree_id());
+
+    Ok((atoms::ok(), tree_oid).encode(env))
+}
 
 fn add<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
     let num1: i64 = try!(args[0].decode());
