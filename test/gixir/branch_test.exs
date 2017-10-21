@@ -37,8 +37,7 @@ defmodule Gixir.Branch.Test do
     System.cmd("git", ["add", "README.md"], [cd: repo_path])
     System.cmd("git", ["commit", "-m", "init"], [cd: repo_path])
     assert {:ok, ref} = Repository.head(repo)
-    assert {:ok, target} = Reference.target(ref)
-    assert {:ok, commit} = Commit.lookup(repo, target)
+    assert {:ok, commit} = Reference.target(ref)
     assert {:ok, commit} = Commit.get_message(commit)
     assert commit.message == "init\n"
 

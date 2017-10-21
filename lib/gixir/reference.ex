@@ -3,7 +3,8 @@ defmodule Gixir.Reference do
 
   alias __MODULE__
 
-  def target(%Reference{} = ref) do
-    {:ok, ref.target}
+  alias Gixir.Commit
+  def target(%Reference{type: :branch} = ref) do
+    Commit.lookup(ref.gixir_repo_ref, ref.target)
   end
 end

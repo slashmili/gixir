@@ -20,4 +20,6 @@ defmodule Gixir.Nif do
   def commit_lookup(_repo_ref, _oid), do: exit(:nif_not_loaded)
   def commit_get_message(_repo_ref, _oid), do: exit(:nif_not_loaded)
   def commit_get_tree_oid(_repo_ref, _oid), do: exit(:nif_not_loaded)
+  def tree_lookup(_repo_ref, _oid), do: exit(:nif_not_loaded)
+  def tree_lookup_bypath(_repo_ref, _oid, _path), do: exit(:nif_not_loaded)
 end

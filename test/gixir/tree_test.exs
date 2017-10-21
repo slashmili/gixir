@@ -3,7 +3,7 @@ defmodule Gixir.TreeTest do
   doctest Gixir
   import Gixir.TestHelper
 
-  alias Gixir.{Repository, Branch, Tree, TreeEntry}
+  alias Gixir.{Repository, Branch, Tree, TreeEntry, Commit}
 
   def commit_files(repo) do
     {:ok, repo_path} = Repository.workdir(repo)
@@ -19,8 +19,9 @@ defmodule Gixir.TreeTest do
     {:ok, repo} = repo_fixture()
     commit_files(repo)
     {:ok, branch} = Repository.lookup_branch(repo, "master", :local)
-    {:ok, commit} = Branch.head(branch)
-    {:ok, tree} = Tree.lookup(repo, commit.tree.oid)
+    assert {:ok, commit} = Branch.target(branch)
+    {:ok, tree} = Commit.get_tree(commit)
+    assert {:ok, tree} = Tree.lookup(repo, tree.oid)
     assert %Tree{} = tree
     assert length(tree.entries) == 2
     [entry_1 , entry_2] = tree.entries
@@ -28,18 +29,21 @@ defmodule Gixir.TreeTest do
     assert entry_1.name == "README.md"
     assert entry_1.type == :blob
     assert entry_1.filemode == 33188
+    assert entry_1.oid == "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
     assert %TreeEntry{} = entry_2
     assert entry_2.name == "src"
     assert entry_2.type == :tree
     assert entry_1.filemode == 33188
+    assert entry_1.oid == "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
   end
 
   test "Lookup a tree by oid" do
     {:ok, repo} = repo_fixture()
     commit_files(repo)
     {:ok, branch} = Repository.lookup_branch(repo, "master", :local)
-    {:ok, commit} = Branch.head(branch)
-    {:ok, %Tree{} = tree} = Tree.lookup(repo, commit.tree.oid)
+    {:ok, commit} = Branch.target(branch)
+    assert {:ok, tree} = Commit.get_tree(commit)
+    {:ok, %Tree{} = tree} = Tree.lookup(repo, tree.oid)
     assert length(tree.entries) == 2
     [_entry_1 , entry_2] = tree.entries
     {:ok, %Tree{} = tree} = Tree.lookup(repo, entry_2.oid)
@@ -55,12 +59,13 @@ defmodule Gixir.TreeTest do
     {:ok, repo} = repo_fixture()
     commit_files(repo)
     {:ok, branch} = Repository.lookup_branch(repo, "master", :local)
-    {:ok, commit} = Branch.head(branch)
-    {:ok, tree} = Tree.lookup(repo, commit.tree.oid)
+    {:ok, commit} = Branch.target(branch)
+    assert {:ok, tree_info} = Commit.get_tree(commit)
+    assert {:ok, tree} = Tree.lookup(repo, tree_info.oid)
     [_, entry_2] = tree.entries
     assert entry_2.name == "src"
     assert entry_2.type == :tree
-    {:ok, tree} = Tree.lookup_bypath(repo, commit.tree, "src")
+    {:ok, tree} = Tree.lookup_bypath(repo, tree_info, "src")
     [entry_1] = tree.entries
     assert entry_1.name == "code.src"
     assert entry_1.type == :blob
@@ -71,12 +76,13 @@ defmodule Gixir.TreeTest do
     {:ok, repo} = repo_fixture()
     commit_files(repo)
     {:ok, branch} = Repository.lookup_branch(repo, "master", :local)
-    {:ok, commit} = Branch.head(branch)
-    {:ok, tree} = Tree.lookup(repo, commit.tree.oid)
+    {:ok, commit} = Branch.target(branch)
+    {:ok, tree_info} = Commit.get_tree(commit)
+    {:ok, tree} = Tree.lookup(repo, tree_info.oid)
     [_, entry_2] = tree.entries
     assert entry_2.name == "src"
     assert entry_2.type == :tree
-    {:ok, %TreeEntry{} = entry} = Tree.lookup_bypath(repo, commit.tree, "src/code.src")
+    {:ok, %TreeEntry{} = entry} = Tree.lookup_bypath(repo, tree_info, "src/code.src")
     assert entry.name == "code.src"
     assert entry.type == :blob
     assert entry.oid == "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
@@ -86,8 +92,8 @@ defmodule Gixir.TreeTest do
     {:ok, repo} = repo_fixture()
     commit_files(repo)
     {:ok, branch} = Repository.lookup_branch(repo, "master", :local)
-    {:ok, commit} = Branch.head(branch)
-    {:error, {:git_tree_entry_bypath, err_msg}} = Tree.lookup_bypath(repo, commit.tree, "src/foo.ex")
-    assert err_msg =~ "does not exist"
+    {:ok, commit} = Branch.target(branch)
+    {:ok, tree_info} = Commit.get_tree(commit)
+    assert {:error, -3} = Tree.lookup_bypath(repo, tree_info, "src/foo.ex")
   end
 end

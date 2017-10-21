@@ -6,7 +6,7 @@ extern crate git2;
 
 use rustler::{NifEnv, NifTerm, NifResult, NifEncoder};
 use rustler::types::atom::NifAtom;
-use git2::{Repository, Branch, Branches, BranchType, Index, Reference, Oid};
+use git2::{Repository, Branch, Branches, BranchType, Index, Reference, Oid, Tree, ObjectType};
 use rustler::resource::ResourceArc;
 use std::sync::{RwLock,Arc};
 use std::ops::Deref;
@@ -24,6 +24,9 @@ mod atoms {
         atom tag;
         atom note;
         atom unknown;
+        atom blob;
+        atom any;
+        atom tree;
         //atom __true__ = "true";
         //atom __false__ = "false";
     }
@@ -45,6 +48,8 @@ rustler_export_nifs! {
     ("commit_lookup", 2, commit_lookup),
     ("commit_get_message", 2, commit_get_message),
     ("commit_get_tree_oid", 2, commit_get_tree_oid),
+    ("tree_lookup", 2, tree_lookup),
+    ("tree_lookup_bypath", 3, tree_lookup_bypath),
     ("ping", 0, ping)],
     Some(on_load)
 }
@@ -126,7 +131,7 @@ fn repo_list_branches<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<Ni
             Ok(branches) => branches,
             Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
     };
-    let mut v: Vec<(String, NifAtom)> = Vec::new();
+    let mut v: Vec<(String, NifAtom, String)> = Vec::new();
     for (i, elem) in branches.enumerate() {
         let b = match elem {
             Ok(b) => b,
@@ -141,11 +146,20 @@ fn repo_list_branches<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<Ni
             Some(v) => v,
             None => return Ok((atoms::error(), 2).encode(env)),
         };
+
+        let reference = branch.get();
+
+        let target = match reference.target() {
+            Some(v) => format!("{}", v),
+            None => return Ok((atoms::error(), 3).encode(env)),
+        };
+
         if btype == BranchType::Local {
-            v.push((String::from(branch_name), atoms::local()));
+            v.push((String::from(branch_name), atoms::local(), target));
         } else {
-            v.push((String::from(branch_name), atoms::remote()));
+            v.push((String::from(branch_name), atoms::remote(), target));
         }
+
     }
 
     Ok((atoms::ok(), v).encode(env))
@@ -186,7 +200,15 @@ fn repo_lookup_branch<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<Ni
         Some(v) => v,
         None => return Ok((atoms::error(), 2).encode(env)),
     };
-    Ok(atoms::ok().encode(env))
+
+    let reference = branch.get();
+
+    let target = match reference.target() {
+        Some(v) => format!("{}", v),
+        None => return Ok((atoms::error(), 3).encode(env)),
+    };
+
+    Ok((atoms::ok(), target).encode(env))
 }
 
 
@@ -353,6 +375,118 @@ fn commit_get_tree_oid<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<N
     let tree_oid = format!("{}", commit.tree_id());
 
     Ok((atoms::ok(), tree_oid).encode(env))
+}
+
+fn tree_lookup<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;
+    let repo_handle = repo_arc.deref();
+    let repo_wrapper = repo_handle.repo.read().unwrap();
+    let RepoWrapper(ref repo) = *repo_wrapper;
+    let oid_str = try!(args[1].decode());
+    let oid  = match Oid::from_str(oid_str) {
+        Ok(oid) => oid,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+
+    };
+
+    let tree = match repo.find_tree(oid) {
+        Ok(tree) => tree,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+
+	let mut v: Vec<(String, String, i32, NifAtom)> = Vec::new();
+	let filemode = 33188;
+	for item in tree.iter() {
+		let name = match item.name() {
+			Some(name) => String::from(name),
+			None => String::from("")
+		};
+		let oid_hex = format!("{}", item.id());
+		let kind = match item.kind() {
+			Some(kind) => kind,
+			None => ObjectType::Any,
+		};
+		let atom_kind = if kind == ObjectType::Blob {
+			atoms::blob()
+		} else if kind == ObjectType::Tree {
+			atoms::tree()
+		} else {
+			atoms::any()
+		};
+		v.push((name, oid_hex, filemode, atom_kind));
+	}
+
+    Ok((atoms::ok(), v).encode(env))
+}
+
+fn tree_lookup_bypath<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;
+    let repo_handle = repo_arc.deref();
+    let repo_wrapper = repo_handle.repo.read().unwrap();
+    let RepoWrapper(ref repo) = *repo_wrapper;
+
+    let oid_str = try!(args[1].decode());
+    let path: String = try!(args[2].decode());
+
+    let oid  = match Oid::from_str(oid_str) {
+        Ok(oid) => oid,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+
+    };
+
+    let tree = match repo.find_tree(oid) {
+        Ok(tree) => tree,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+
+    let tree_entry = match tree.get_path(Path::new(&path)) {
+        Ok(tree_entry) => tree_entry,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+    let filemode = 33188;
+    if tree_entry.kind() == Some(ObjectType::Blob) {
+        let name = match tree_entry.name() {
+            Some(name) => String::from(name),
+            None => String::from("")
+        };
+
+		let oid_hex = format!("{}", tree_entry.id());
+        return Ok((atoms::ok(), (name, oid_hex, filemode, atoms::blob())).encode(env))
+    } else if tree_entry.kind() == Some(ObjectType::Tree) {
+
+
+        let tree = match repo.find_tree(tree_entry.id()) {
+            Ok(tree) => tree,
+            Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+        };
+
+		let tree_oid_hex = format!("{}", tree.id());
+
+        let mut v: Vec<(String, String, i32, NifAtom)> = Vec::new();
+        for item in tree.iter() {
+            let name = match item.name() {
+                Some(name) => String::from(name),
+                None => String::from("")
+            };
+            let oid_hex = format!("{}", item.id());
+            let kind = match item.kind() {
+                Some(kind) => kind,
+                None => ObjectType::Any,
+            };
+            let atom_kind = if kind == ObjectType::Blob {
+                atoms::blob()
+            } else if kind == ObjectType::Tree {
+                atoms::tree()
+            } else {
+                atoms::any()
+            };
+            v.push((name, oid_hex, filemode, atom_kind));
+        }
+
+        return Ok((atoms::ok(), tree_oid_hex, v).encode(env))
+    }
+
+    Ok(atoms::error().encode(env))
 }
 
 fn add<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {

@@ -12,6 +12,7 @@ defmodule Gixir.Commit do
     #  tree = Tree.to_struct(repo, tree_oid)
     #  {:ok, to_struct(commit_oid, message, tree, Author.to_struct(author_arg), Author.to_struct(committer_arg))}
     #end
+    :error
   end
 
   def lookup(repo, oid) do
