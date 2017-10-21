@@ -8,8 +8,6 @@ elixir:
 otp_release:
   - 20.0
 
-cache: ~/libgit2
-
 os:
   - linux
 
@@ -21,7 +19,7 @@ addons:
     - libssh2-1-dev
     - cmake
 
-env: LIBGIT2=~/libgit2/_install/ LD_LIBRARY_PATH=~/libgit2/_install/lib PATH=$HOME/.cargo/bin:$PATH
+env: PATH=$HOME/.cargo/bin:$PATH
 
 before_install:
   - kerl list installations
