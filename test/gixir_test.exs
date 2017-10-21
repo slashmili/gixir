@@ -3,7 +3,6 @@ defmodule GixirTest do
   doctest Gixir
 
   test "communication with the nif" do
-    {:ok, git} = Gixir.start
-    assert {:ok, :pong} == Gixir.ping(git)
+    assert {:ok, :pong} == Gixir.Nif.ping
   end
 end
