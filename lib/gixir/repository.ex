@@ -38,7 +38,7 @@ defmodule Gixir.Repository do
 
   """
   def lookup_branch(repo, name, type) do
-    branch_type = if(type == :local, do: 1, else: 2)
+    _branch_type = if(type == :local, do: 1, else: 2)
     with {:ok, target_commit} <- Gixir.Nif.repo_lookup_branch(repo, name, type) do
       {:ok, Branch.build_struct(repo, {name, type, target_commit})}
     end

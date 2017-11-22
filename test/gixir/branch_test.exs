@@ -1,6 +1,6 @@
 defmodule Gixir.Branch.Test do
   use ExUnit.Case
-  alias Gixir.{Branch, Commit, Repository, Reference}
+  alias Gixir.{Commit, Repository, Reference}
   import Gixir.TestHelper
 
   test "get list of branches" do

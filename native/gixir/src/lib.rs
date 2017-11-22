@@ -4,9 +4,10 @@
 
 extern crate git2;
 
-use rustler::{NifEnv, NifTerm, NifResult, NifEncoder};
+use rustler::{NifEnv, NifTerm, NifResult, NifEncoder, NifError};
+use rustler::types::list::NifListIterator;
 use rustler::types::atom::NifAtom;
-use git2::{Repository, Branch, Branches, BranchType, Index, Reference, Oid, Tree, ObjectType};
+use git2::{Repository, Branch, Branches, BranchType, Index, Reference, Oid, Tree, ObjectType, Signature, Time, Commit};
 use rustler::resource::ResourceArc;
 use std::sync::{RwLock,Arc};
 use std::ops::Deref;
@@ -45,6 +46,7 @@ rustler_export_nifs! {
     ("index_add_bypath", 2, index_add_bypath),
     ("index_write_tree", 1, index_write_tree),
     ("index_write", 1, index_write),
+    ("commit_create", 2, commit_create),
     ("commit_lookup", 2, commit_lookup),
     ("commit_get_message", 2, commit_get_message),
     ("commit_get_tree_oid", 2, commit_get_tree_oid),
@@ -309,6 +311,69 @@ fn index_write<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'
     Ok(atoms::ok().encode(env))
 }
 
+fn commit_create<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;
+    let repo_handle = repo_arc.deref();
+    let repo_wrapper = repo_handle.repo.read().unwrap();
+    let RepoWrapper(ref repo) = *repo_wrapper;
+    let (update_ref, message, author_tuple, committer, oid_str, parents_iter) : (String, String, (String, String, i64, i32), (String, String, i64, i32), String, NifListIterator) = args[1].decode()?;
+
+    let parents_result: Result<Vec<String>, NifError> = parents_iter
+        .map(|x| x.decode::<String>())
+        .collect();
+
+    let parents = match parents_result {
+        Ok(parents) => parents,
+        Err(e) => return Ok((atoms::error(), -1).encode(env)),
+    };
+
+    let mut parent_commits: Vec<::Commit> = Vec::new();
+    for p in parents {
+        let oid  = match Oid::from_str(&p) {
+            Ok(oid) => oid,
+            Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+
+        };
+
+        let commit = match repo.find_commit(oid) {
+            Ok(commit) => commit,
+            Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+        };
+        parent_commits.push(commit);
+    }
+
+    let (author_name, author_email, time, offset) : (String, String, i64, i32) = author_tuple;
+    let author_time = git2::Time::new(time, offset);
+    let author = match Signature::new(&author_name, &author_email, &author_time) {
+        Ok(author) => author,
+        Err(e) => return Ok((atoms::error(), -2).encode(env)),
+    };
+
+    let oid  = match Oid::from_str(&oid_str) {
+        Ok(oid) => oid,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+
+    let tree = match repo.find_tree(oid) {
+        Ok(tree) => tree,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+
+    let parent_slice = [];
+    let commit_id = match repo.commit(Some(&update_ref), &author, &author, &message, &tree, &parent_slice) {
+        Ok(commit) => commit,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+
+    let commit = match repo.find_commit(commit_id) {
+        Ok(commit) => commit,
+        Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+    };
+
+    let commit_id = format!("{}", commit_id);
+    let tree_id = format!("{}", commit.tree_id());
+    Ok((atoms::ok(), commit_id, tree_id).encode(env))
+}
 fn commit_lookup<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
     let repo_arc: ResourceArc<MyRepo> = args[0].decode()?;
     let repo_handle = repo_arc.deref();
