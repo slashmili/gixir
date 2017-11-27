@@ -1,6 +1,6 @@
 defmodule Gixir.Repository do
 
-  alias Gixir.{Branch, Index}
+  alias Gixir.{Branch, Index, Reference}
 
   @doc """
   Initialize a Git repository in `path`. This implies creating all the
@@ -17,25 +17,16 @@ defmodule Gixir.Repository do
   """
   def init_at(path, opts \\ []) do
     bare = Keyword.get(opts, :bare, false)
-    with {:ok, pid} <- Gixir.start(),
-         :ok <- GenServer.call(pid, {:repository_init_at, {path, bare}}) do
-      {:ok, pid}
-    else
-      error -> error
-    end
+    Gixir.Nif.repo_init_at(path, bare)
   end
 
   def open(path) do
-    with {:ok, pid} <- Gixir.start(),
-         :ok <- GenServer.call(pid, {:repository_open, {path}}) do
-      {:ok, pid}
-    else
-      error -> error
-    end
+    Gixir.Nif.repo_open(path)
   end
 
+  @spec branches(reference) :: {:ok, list(%Branch{})} | {:error, any()}
   def branches(repo) do
-    with {:ok, branches} <- GenServer.call(repo, {:repository_list_branches, {}}) do
+    with {:ok, branches} <- Gixir.Nif.repo_list_branches(repo) do
       branches
       |> Enum.map(fn b -> Branch.build_struct(repo, b) end)
       |> (&({:ok, &1})).()
@@ -47,9 +38,9 @@ defmodule Gixir.Repository do
 
   """
   def lookup_branch(repo, name, type) do
-    branch_type = if(type == :local, do: 1, else: 2)
-    with :ok <- GenServer.call(repo, {:repository_lookup_branch, {name, branch_type}}) do
-      {:ok, Branch.build_struct(repo, {name, type})}
+    _branch_type = if(type == :local, do: 1, else: 2)
+    with {:ok, target_commit} <- Gixir.Nif.repo_lookup_branch(repo, name, type) do
+      {:ok, Branch.build_struct(repo, {name, type, target_commit})}
     end
   end
 
@@ -59,10 +50,16 @@ defmodule Gixir.Repository do
     iex>{:ok, repo_path} = Repository.workdir(repo)
   """
   def workdir(repo) do
-    GenServer.call(repo, {:repository_workdir, {}})
+    Gixir.Nif.repo_workdir(repo)
   end
 
   def index(repo) do
-    %Index{gixir_pid: repo}
+    %Index{gixir_repo_ref: repo}
+  end
+
+  def head(repo) do
+    with {:ok, {shorthand, name}, target, type} <- Gixir.Nif.repo_head(repo) do
+      {:ok, %Reference{gixir_repo_ref: repo, shorthand: shorthand, name: name, target: target, type: type}}
+    end
   end
 end

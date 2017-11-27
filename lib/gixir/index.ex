@@ -1,11 +1,11 @@
 defmodule Gixir.Index do
-  defstruct gixir_pid: nil, index_id: nil
+  defstruct gixir_repo_ref: nil, index_ref: nil
 
   alias Gixir.Index
 
   def new(repo) do
-    with {:ok, id} <- GenServer.call(repo, {:index_new, {}}) do
-      {:ok, %Index{gixir_pid: repo, index_id: id}}
+    with {:ok, id} <- Gixir.Nif.index_new(repo) do
+      {:ok, %Index{gixir_repo_ref: repo, index_ref: id}}
     end
   end
 
@@ -19,9 +19,7 @@ defmodule Gixir.Index do
   for more detail read documents for `git_index_add_bypath`
   """
   def add(index, file_path) do
-    with :ok <- GenServer.call(index.gixir_pid, {:index_add_bypath, {file_path, index.index_id}}) do
-      :ok
-    end
+    Gixir.Nif.index_add_bypath(index.index_ref, file_path)
   end
 
   @doc """
@@ -30,17 +28,13 @@ defmodule Gixir.Index do
   This is the OID that can be used e.g. to create a commit.
   """
   def write_tree(index) do
-    with {:ok, commit_tree} <- GenServer.call(index.gixir_pid, {:index_write_tree, {index.index_id}}) do
-      {:ok, commit_tree}
-    end
+    Gixir.Nif.index_write_tree(index.index_ref)
   end
 
   @doc """
   Write an existing index object from memory back to disk using an atomic file lock.
   """
   def write(index) do
-    with :ok <- GenServer.call(index.gixir_pid, {:index_write, {index.index_id}}) do
-      :ok
-    end
+    Gixir.Nif.index_write(index.index_ref)
   end
 end

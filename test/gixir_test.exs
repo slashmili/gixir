@@ -2,8 +2,7 @@ defmodule GixirTest do
   use ExUnit.Case
   doctest Gixir
 
-  test "communication with the git port" do
-    {:ok, git} = Gixir.start
-    assert {:ok, :pong} == Gixir.ping(git)
+  test "communication with the nif" do
+    assert {:ok, :pong} == Gixir.Nif.ping
   end
 end
