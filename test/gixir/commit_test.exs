@@ -28,7 +28,7 @@ defmodule Gixir.CommitTest do
     :ok = Index.add(index, "README.md")
     {:ok, commit_tree} = Index.write_tree(index)
     assert :ok == Index.write(index)
-    commit_data = %{author: author, message: "hello", committer: author, parents: [commit.oid], tree: commit_tree, update_ref: "HEAD"}
+    _commit_data = %{author: author, message: "hello", committer: author, parents: [commit.oid], tree: commit_tree, update_ref: "HEAD"}
     #ignore this part of the test since I can't figure out how
     #convert Vec to Reference for repo.commit
     #assert {:ok, %Commit{} = commit} = Commit.create(repo, commit_data)

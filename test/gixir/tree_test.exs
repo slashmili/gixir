@@ -20,6 +20,8 @@ defmodule Gixir.TreeTest do
     commit_files(repo)
     {:ok, branch} = Repository.lookup_branch(repo, "master", :local)
     assert {:ok, commit} = Branch.target(branch)
+    assert %Gixir.Tree{} = commit.tree
+
     {:ok, tree} = Commit.get_tree(commit)
     assert {:ok, tree} = Tree.lookup(repo, tree.oid)
     assert %Tree{} = tree

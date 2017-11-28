@@ -391,7 +391,9 @@ fn commit_lookup<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm
         Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
     };
 
-    Ok(atoms::ok().encode(env))
+    let tree_id = format!("{}", commit.tree_id());
+
+    Ok((atoms::ok(), tree_id).encode(env))
 }
 
 

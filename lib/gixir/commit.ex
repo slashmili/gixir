@@ -3,8 +3,8 @@ defmodule Gixir.Commit do
   defstruct gixir_repo_ref: nil, oid: nil , message: nil, oid: nil, parents: [],
             author: nil, committer: nil, tree: nil
 
-  def to_struct(repo, oid) do
-    %Commit{gixir_repo_ref: repo, oid: oid}
+  def to_struct(repo, oid, tree) do
+    %Commit{gixir_repo_ref: repo, oid: oid, tree: tree}
   end
   def to_struct(repo, commit_oid, message, tree, author, committer) do
     %Commit{
@@ -52,8 +52,9 @@ defmodule Gixir.Commit do
   end
 
   def lookup(repo, oid) do
-    with :ok <- Gixir.Nif.commit_lookup(repo, oid) do
-      {:ok, to_struct(repo, oid)}
+    with {:ok, tree_oid} <- Gixir.Nif.commit_lookup(repo, oid) do
+      tree = Tree.to_struct(repo, tree_oid)
+      {:ok, to_struct(repo, oid, tree)}
     end
   end
 
