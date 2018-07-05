@@ -1,0 +1,31 @@
+sudo: false
+language: elixir
+elixir:
+  - 1.4.5
+  - 1.5.0
+  - 1.6.0
+
+otp_release:
+  - 21.0
+
+os:
+  - linux
+
+dist: trusty
+
+addons:
+  apt:
+    packages:
+    - libssh2-1-dev
+    - cmake
+
+env: PATH=$HOME/.cargo/bin:$PATH
+
+before_install:
+  - kerl list installations
+  - kerl list releases
+  - curl -sSf https://build.travis-ci.org/files/rustup-init.sh | sh -s -- --default-toolchain=1.19.0 -y
+  - rustc --version
+  - rustup --version
+  - cargo --version
+  - "./scripts/travisbuild.sh"
