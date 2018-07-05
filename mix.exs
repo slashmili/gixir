@@ -23,7 +23,8 @@ defmodule Gixir.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:rustler, "~> 0.17.1"}
+      {:rustler, "~> 0.17.1"},
+      {:dialyxir, "~> 1.0.0-rc.2", only: [:dev], runtime: false}
     ]
   end
 

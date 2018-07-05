@@ -16,7 +16,7 @@ defmodule Gixir.Repository do
   of `path`. Non-bare repositories are created in a `.git` folder and
   use `path` as working directory.
   """
-  @spec init_at(String.t(), keyword) :: {:ok, t} | {:error, any}
+  @spec init_at(String.t(), keyword) :: {:ok, t} | {:error, any} | no_return()
   def init_at(path, opts \\ []) do
     bare = Keyword.get(opts, :bare, false)
 

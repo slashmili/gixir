@@ -21,6 +21,11 @@ addons:
 
 env: PATH=$HOME/.cargo/bin:$PATH
 
+cache:
+  directories:
+    - _build
+    - deps
+
 before_install:
   - kerl list installations
   - kerl list releases
@@ -29,3 +34,6 @@ before_install:
   - rustup --version
   - cargo --version
   - "./scripts/travisbuild.sh"
+script:
+  - mix test
+  - mix dialyzer --halt-exit-status
