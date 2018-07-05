@@ -12,3 +12,4 @@ crate-type = ["dylib"]
 rustler = "0.17.1"
 rustler_codegen = "0.17.1"
 lazy_static = "1.0"
+git2 = "0.7.2"

@@ -1,8 +1,13 @@
-#[macro_use] extern crate rustler;
-#[macro_use] extern crate rustler_codegen;
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate rustler;
 
-use rustler::{Env, Term, NifResult, Encoder};
+extern crate git2;
+
+use rustler::{Encoder, Env, NifResult, Term};
+
+mod repository;
 
 mod atoms {
     rustler_atoms! {
@@ -14,9 +19,17 @@ mod atoms {
 }
 
 rustler_export_nifs! {
-    "Elixir.Gixir",
-    [("add", 2, add)],
-    None
+    "Elixir.Gixir.Nif",
+    [
+        ("add", 2, add),
+        ("repository_init_at", 2, repository::init_at)
+    ],
+    Some(on_load)
+}
+
+fn on_load<'a>(env: Env<'a>, _load_info: Term<'a>) -> bool {
+    resource_struct_init!(repository::RepositoryResource, env);
+    true
 }
 
 fn add<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
