@@ -1,0 +1,3 @@
+%{
+  "rustler": {:hex, :rustler, "0.17.1", "2b4f120daf411b4eebd8cad6cb68f7d519dc409ca9e70daa8856d1d37b13e203", [:mix], [], "hexpm"},
+}

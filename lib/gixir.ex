@@ -3,16 +3,7 @@ defmodule Gixir do
   Documentation for Gixir.
   """
 
-  @doc """
-  Hello world.
+  use Rustler, otp_app: :gixir, crate: :gixir
 
-  ## Examples
-
-      iex> Gixir.hello
-      :world
-
-  """
-  def hello do
-    :world
-  end
+  def add(_num1, _num2), do: exit(:nif_not_loaded)
 end
