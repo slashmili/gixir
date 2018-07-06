@@ -29,7 +29,7 @@ cache:
 before_install:
   - kerl list installations
   - kerl list releases
-  - curl -sSf https://build.travis-ci.org/files/rustup-init.sh | sh -s -- --default-toolchain=1.19.0 -y
+  - curl -sSf https://build.travis-ci.org/files/rustup-init.sh | sh -s -- --default-toolchain=1.25.0 -y
   - rustc --version
   - rustup --version
   - cargo --version
