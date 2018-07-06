@@ -31,8 +31,21 @@ pub fn init_at<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
     } else {
         match Repository::init(path) {
             Ok(repo) => repo,
-            Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+            Err(e) => {
+                return Ok((atoms::error(), (e.raw_code(), e.message().to_string())).encode(env))
+            }
         }
+    };
+
+    let repo = ResourceArc::new(RepositoryResource { repo: repo });
+    Ok((atoms::ok(), repo).encode(env))
+}
+
+pub fn open<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
+    let path: String = try!(args[0].decode());
+    let repo = match Repository::open(path) {
+        Ok(repo) => repo,
+        Err(e) => return Ok((atoms::error(), (e.raw_code(), e.message().to_string())).encode(env)),
     };
 
     let repo = ResourceArc::new(RepositoryResource { repo: repo });

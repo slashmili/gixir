@@ -28,4 +28,17 @@ defmodule Gixir.Repository do
       error -> Error.to_error(error, __MODULE__)
     end
   end
+
+  @doc """
+  open a Git repository in `path` an return Repository module
+  which has reference to the repository.
+  """
+  @spec open(String.t()) :: {:ok, t} | {:error, any} | no_return()
+  def open(path) do
+    with {:ok, ref} <- Gixir.Nif.repository_open(path) do
+      {:ok, %__MODULE__{path: path, reference: ref}}
+    else
+      error -> Error.to_error(error, __MODULE__)
+    end
+  end
 end

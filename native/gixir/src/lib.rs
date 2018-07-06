@@ -22,7 +22,8 @@ rustler_export_nifs! {
     "Elixir.Gixir.Nif",
     [
         ("add", 2, add),
-        ("repository_init_at", 2, repository::init_at)
+        ("repository_init_at", 2, repository::init_at),
+        ("repository_open", 1, repository::open)
     ],
     Some(on_load)
 }
