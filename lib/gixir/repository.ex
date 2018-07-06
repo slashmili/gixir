@@ -3,7 +3,7 @@ defmodule Gixir.Repository do
 
   @type t :: %__MODULE__{path: String.t(), reference: reference()}
 
-  alias Gixir.Error
+  alias Gixir.{Error, Nif, Index}
 
   @doc """
   Initialize a Git repository in `path`. This implies creating all the
@@ -22,7 +22,7 @@ defmodule Gixir.Repository do
   def init_at(path, opts \\ []) do
     bare = Keyword.get(opts, :bare, false)
 
-    with {:ok, ref} <- Gixir.Nif.repository_init_at(path, bare) do
+    with {:ok, ref} <- Nif.repository_init_at(path, bare) do
       {:ok, %__MODULE__{path: path, reference: ref}}
     else
       error -> Error.to_error(error, __MODULE__)
@@ -35,10 +35,22 @@ defmodule Gixir.Repository do
   """
   @spec open(String.t()) :: {:ok, t} | {:error, any} | no_return()
   def open(path) do
-    with {:ok, ref} <- Gixir.Nif.repository_open(path) do
+    with {:ok, ref} <- Nif.repository_open(path) do
       {:ok, %__MODULE__{path: path, reference: ref}}
     else
       error -> Error.to_error(error, __MODULE__)
+    end
+  end
+
+  @doc """
+  Get the Index file for this repository.
+
+  If a custom index has not been set, the default index for the repository will be returned (the one located in .git/index).
+  """
+  @spec index(t) :: {:ok, Index.t()} | {:error, any} | no_return()
+  def index(repo) do
+    with {:ok, ref} <- Nif.repository_index(repo.reference) do
+      {:ok, %Index{reference: ref}}
     end
   end
 end

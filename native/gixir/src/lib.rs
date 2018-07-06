@@ -8,6 +8,7 @@ extern crate git2;
 use rustler::{Encoder, Env, NifResult, Term};
 
 mod repository;
+mod index;
 
 mod atoms {
     rustler_atoms! {
@@ -23,13 +24,15 @@ rustler_export_nifs! {
     [
         ("add", 2, add),
         ("repository_init_at", 2, repository::init_at),
-        ("repository_open", 1, repository::open)
+        ("repository_open", 1, repository::open),
+        ("repository_index", 1, repository::index)
     ],
     Some(on_load)
 }
 
 fn on_load<'a>(env: Env<'a>, _load_info: Term<'a>) -> bool {
     resource_struct_init!(repository::RepositoryResource, env);
+    resource_struct_init!(index::IndexResource, env);
     true
 }
 

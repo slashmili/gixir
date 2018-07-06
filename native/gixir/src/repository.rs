@@ -1,5 +1,7 @@
 use git2::Repository;
 
+use index::IndexResource;
+
 use rustler::{Encoder, Env, NifResult, Term};
 use rustler::resource::ResourceArc;
 
@@ -50,4 +52,15 @@ pub fn open<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
 
     let repo = ResourceArc::new(RepositoryResource { repo: repo });
     Ok((atoms::ok(), repo).encode(env))
+}
+
+pub fn index<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
+    let repo_arc: ResourceArc<RepositoryResource> = try!(args[0].decode());
+    let repo = &repo_arc.repo;
+    let index = match repo.index() {
+        Ok(index) => index,
+        Err(e) => return Ok((atoms::error(), (e.raw_code(), e.message().to_string())).encode(env)),
+    };
+    let index = ResourceArc::new(IndexResource { index: index });
+    Ok((atoms::ok(), index).encode(env))
 }
