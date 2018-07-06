@@ -24,7 +24,9 @@ pub fn init_at<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
     let repo = if bare {
         match Repository::init_bare(path) {
             Ok(repo) => repo,
-            Err(e) => return Ok((atoms::error(), e.raw_code()).encode(env)),
+            Err(e) => {
+                return Ok((atoms::error(), (e.raw_code(), e.message().to_string())).encode(env))
+            }
         }
     } else {
         match Repository::init(path) {

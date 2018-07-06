@@ -6,11 +6,16 @@ defmodule Gixir.RepositoryTest do
     Path.expand("./priv/test_tmp/#{name}")
   end
 
-  test "init a repo" do
+  test "initializes a repo" do
     repo_path = get_random_repo_path()
     assert {:ok, repo} = Gixir.Repository.init_at(repo_path, bare: false)
     assert repo.path == repo_path
     assert is_reference(repo.reference)
     refute File.exists?(Path.join(repo_path, "HEAD"))
+  end
+
+  test "fails on wrong repo path" do
+    repo_path = "/tmp1111/asd"
+    {:error, %{id: -1}} = Gixir.Repository.init_at(repo_path, bare: true)
   end
 end

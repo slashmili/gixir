@@ -3,6 +3,8 @@ defmodule Gixir.Repository do
 
   @type t :: %__MODULE__{path: String.t(), reference: reference()}
 
+  alias Gixir.Error
+
   @doc """
   Initialize a Git repository in `path`. This implies creating all the
   necessary files on the FS, or re-initializing an already existing
@@ -22,6 +24,8 @@ defmodule Gixir.Repository do
 
     with {:ok, ref} <- Gixir.Nif.repository_init_at(path, bare) do
       {:ok, %__MODULE__{path: path, reference: ref}}
+    else
+      error -> Error.to_error(error, __MODULE__)
     end
   end
 end
