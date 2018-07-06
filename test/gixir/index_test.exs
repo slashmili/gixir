@@ -2,7 +2,7 @@ defmodule Gixir.IndexTest do
   use ExUnit.Case
   import Gixir.TestHelper
 
-  alias Gixir.{Repository, Index}
+  alias Gixir.{Repository, Index, Oid}
 
   test "write a file to index" do
     {:ok, repo} = repo_fixture()
@@ -13,9 +13,7 @@ defmodule Gixir.IndexTest do
     File.write!(Path.join(repo_path, "README.md"), "hi\n")
 
     assert :ok = Index.add(index, "README.md")
-    assert {:ok, commit_tree} = Index.write_tree(index)
-    assert byte_size(commit_tree) == 40
-    assert commit_tree == "444a8fa98e219b9ee8585973bba9425676aba452"
-    assert :ok == Index.write(index)
+    assert {:ok, oid} = Index.write_tree(index)
+    assert %Oid{} = oid
   end
 end

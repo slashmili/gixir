@@ -27,6 +27,7 @@ rustler_export_nifs! {
         ("repository_open", 1, repository::open),
         ("repository_index", 1, repository::index),
         ("index_add_bypath", 2, index::add_bypath),
+        ("index_write_tree", 1, index::write_tree),
     ],
     Some(on_load)
 }
@@ -34,6 +35,7 @@ rustler_export_nifs! {
 fn on_load<'a>(env: Env<'a>, _load_info: Term<'a>) -> bool {
     resource_struct_init!(repository::RepositoryResource, env);
     resource_struct_init!(index::IndexResource, env);
+    resource_struct_init!(index::OidResource, env);
     true
 }
 

@@ -3,6 +3,8 @@ defmodule Gixir.Index do
 
   @type t :: %{reference: reference}
 
+  alias Gixir.{Error, Nif, Oid}
+
   @doc """
   Add or update an index entry from a file on disk.
 
@@ -14,6 +16,20 @@ defmodule Gixir.Index do
   """
   @spec add(t, String.t()) :: :ok | {:error, any} | no_return
   def add(index, file_path) do
-    Gixir.Nif.index_add_bypath(index.reference, file_path)
+    Nif.index_add_bypath(index.reference, file_path)
+  end
+
+  @doc """
+  This method will scan the index and write a representation of its current state back to disk;
+  it recursively creates tree objects for each of the subtrees stored in the index, but only returns the OID of the root tree.
+  This is the OID that can be used e.g. to create a commit.
+  """
+  @spec write_tree(t) :: {:ok, any} | {:error, any} | no_return
+  def write_tree(index) do
+    with {:ok, oid_ref} <- Nif.index_write_tree(index.reference) do
+      {:ok, %Oid{reference: oid_ref}}
+    else
+      error -> Error.to_error(error, __MODULE__)
+    end
   end
 end

@@ -1,4 +1,4 @@
-use git2::Index;
+use git2::{Index, Oid};
 
 use rustler::{Encoder, Env, NifResult, Term};
 use rustler::resource::ResourceArc;
@@ -16,6 +16,10 @@ pub struct IndexResource {
     pub index: RwLock<Index>,
 }
 
+pub struct OidResource {
+    pub oid: Oid,
+}
+
 unsafe impl Send for IndexResource {}
 unsafe impl Sync for IndexResource {}
 
@@ -28,4 +32,17 @@ pub fn add_bypath<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
         _ => atoms::ok(),
     };
     Ok((result).encode(env))
+}
+
+pub fn write_tree<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
+    let index_arc: ResourceArc<IndexResource> = try!(args[0].decode());
+    let mut index = index_arc.index.write().unwrap();
+
+    let oid = match index.write_tree() {
+        Ok(oid) => oid,
+        Err(e) => return Ok((atoms::error(), (e.raw_code(), e.message().to_string())).encode(env)),
+    };
+
+    let oid = ResourceArc::new(OidResource { oid: oid });
+    Ok((atoms::ok(), oid).encode(env))
 }
