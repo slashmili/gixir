@@ -5,6 +5,7 @@ use index::IndexResource;
 use rustler::{Encoder, Env, NifResult, Term};
 use rustler::resource::ResourceArc;
 
+use std::sync::RwLock;
 mod atoms {
     rustler_atoms! {
         atom ok;
@@ -61,6 +62,8 @@ pub fn index<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
         Ok(index) => index,
         Err(e) => return Ok((atoms::error(), (e.raw_code(), e.message().to_string())).encode(env)),
     };
-    let index = ResourceArc::new(IndexResource { index: index });
+    let index = ResourceArc::new(IndexResource {
+        index: RwLock::new(index),
+    });
     Ok((atoms::ok(), index).encode(env))
 }

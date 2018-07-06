@@ -53,4 +53,7 @@ defmodule Gixir.Repository do
       {:ok, %Index{reference: ref}}
     end
   end
+
+  @spec workdir(t) :: String.t()
+  def workdir(repo), do: repo.path
 end

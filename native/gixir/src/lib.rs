@@ -25,7 +25,8 @@ rustler_export_nifs! {
         ("add", 2, add),
         ("repository_init_at", 2, repository::init_at),
         ("repository_open", 1, repository::open),
-        ("repository_index", 1, repository::index)
+        ("repository_index", 1, repository::index),
+        ("index_add_bypath", 2, index::add_bypath),
     ],
     Some(on_load)
 }
