@@ -28,6 +28,7 @@ rustler_export_nifs! {
         ("repository_index", 1, repository::index),
         ("index_add_bypath", 2, index::add_bypath),
         ("index_write_tree", 1, index::write_tree),
+        ("index_write", 1, index::write),
     ],
     Some(on_load)
 }

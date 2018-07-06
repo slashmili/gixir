@@ -46,3 +46,15 @@ pub fn write_tree<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
     let oid = ResourceArc::new(OidResource { oid: oid });
     Ok((atoms::ok(), oid).encode(env))
 }
+
+pub fn write<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
+    let index_arc: ResourceArc<IndexResource> = try!(args[0].decode());
+    let mut index = index_arc.index.write().unwrap();
+
+    let result = match index.write() {
+        Ok(_) => atoms::ok(),
+        Err(e) => return Ok((atoms::error(), (e.raw_code(), e.message().to_string())).encode(env)),
+    };
+
+    Ok((result).encode(env))
+}

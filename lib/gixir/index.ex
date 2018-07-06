@@ -32,4 +32,11 @@ defmodule Gixir.Index do
       error -> Error.to_error(error, __MODULE__)
     end
   end
+
+  @doc """
+  Write an existing index object from memory back to disk using an atomic file lock.
+  """
+  def write(index) do
+    Gixir.Nif.index_write(index.reference)
+  end
 end
