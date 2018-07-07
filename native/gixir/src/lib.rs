@@ -9,6 +9,8 @@ use rustler::{Encoder, Env, NifResult, Term};
 
 mod repository;
 mod index;
+mod commit;
+mod signature;
 
 mod atoms {
     rustler_atoms! {
@@ -29,6 +31,7 @@ rustler_export_nifs! {
         ("index_add_bypath", 2, index::add_bypath),
         ("index_write_tree", 1, index::write_tree),
         ("index_write", 1, index::write),
+        ("commit_create", 7, commit::create),
     ],
     Some(on_load)
 }

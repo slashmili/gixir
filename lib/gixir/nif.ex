@@ -12,4 +12,5 @@ defmodule Gixir.Nif do
   def index_add_bypath(_, _), do: :erlang.nif_error(:nif_not_loaded)
   def index_write_tree(_), do: :erlang.nif_error(:nif_not_loaded)
   def index_write(_), do: :erlang.nif_error(:nif_not_loaded)
+  def commit_create(_, _, _, _, _, _, _), do: :erlang.nif_error(:nif_not_loaded)
 end
