@@ -29,6 +29,7 @@ defmodule Gixir.MixProject do
   defp deps do
     [
       {:rustler, "~> 0.17.1"},
+      {:ex_guard, "~> 1.3", only: :dev},
       {:dialyxir, "~> 1.0.0-rc.2", only: [:dev], runtime: false}
     ]
   end
