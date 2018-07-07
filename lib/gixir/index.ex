@@ -27,7 +27,7 @@ defmodule Gixir.Index do
   @spec write_tree(t) :: {:ok, any} | {:error, any} | no_return
   def write_tree(index) do
     with {:ok, oid_ref} <- Nif.index_write_tree(index.reference) do
-      {:ok, %Oid{reference: oid_ref}}
+      {:ok, %Oid{reference: oid_ref, type: :tree}}
     else
       error -> Error.to_error(error, __MODULE__)
     end
@@ -36,6 +36,7 @@ defmodule Gixir.Index do
   @doc """
   Write an existing index object from memory back to disk using an atomic file lock.
   """
+  @spec write(t) :: :ok | {:error, any} | no_return
   def write(index) do
     Gixir.Nif.index_write(index.reference)
   end

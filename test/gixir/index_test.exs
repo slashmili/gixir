@@ -14,7 +14,7 @@ defmodule Gixir.IndexTest do
 
     assert :ok = Index.add(index, "README.md")
     assert {:ok, oid} = Index.write_tree(index)
-    assert %Oid{} = oid
+    assert %Oid{type: :tree} = oid
     assert :ok == Index.write(index)
   end
 end
