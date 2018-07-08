@@ -4,9 +4,11 @@ defmodule Gixir.Error do
   @type t :: %__MODULE__{id: integer, message: String.t(), module: atom}
 
   @spec to_error(tuple, atom) :: {:error, t}
-  def to_error(error_tuple, module) when is_tuple(error_tuple) do
-    with {:error, {id, message}} <- error_tuple do
-      {:error, new(id, message, module)}
+  def to_error(error_tuple, module) do
+    case error_tuple do
+      {:error, {id, message}} -> {:error, new(id, message, module)}
+      {:error, error} -> {:error, new(-100, error, module)}
+      e -> {:error, new(-101, e, module)}
     end
   end
 

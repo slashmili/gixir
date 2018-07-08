@@ -11,7 +11,7 @@ defmodule Gixir.Commit do
           Oid.t(),
           list(any),
           String.t() | nil
-        ) :: {:ok, Oid.t()} | {:error, any} | no_return
+        ) :: {:ok, Oid.t()} | {:error, Error.t()} | no_return
   def create(repo, author, committer, message, %Oid{type: :tree} = tree, parents, update_ref) do
     author = Signature.to_map(author)
     committer = Signature.to_map(committer)
