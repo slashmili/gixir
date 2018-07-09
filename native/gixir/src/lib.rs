@@ -11,7 +11,6 @@ mod repository;
 mod index;
 mod commit;
 mod signature;
-mod tree;
 
 mod atoms {
     rustler_atoms! {
