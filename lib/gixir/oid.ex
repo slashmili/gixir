@@ -1,6 +1,15 @@
 defmodule Gixir.Oid do
-  defstruct reference: nil, type: nil
+  @moduledoc """
+    Unique identity of any object (commit, tree, blob, tag).
+  """
+  defstruct reference: nil, type: nil, repo: nil
+  alias Gixir.Repository
 
-  @type index_type :: :commit | :tree | :blob | :tag
-  @type t :: %{reference: reference, type: index_type}
+  @type oid_type :: :commit | :tree | :blob | :tag
+  @type t :: %{reference: reference, type: oid_type, repo: Repository.t()}
+
+  @spec to_struct(reference, oid_type, Repository.t()) :: t
+  def to_struct(reference, type, repo) do
+    %__MODULE__{reference: reference, type: type, repo: repo}
+  end
 end

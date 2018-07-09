@@ -18,7 +18,9 @@ defmodule Gixir.CommitTest do
 
     author = %Signature{email: "foo@bar.com", name: "Foo Bar", datetime: DateTime.utc_now()}
 
-    assert {:ok, %Oid{type: :commit}} =
+    assert {:ok, %Oid{type: :commit} = commit_oid} =
              Commit.create(repo, author, author, "initial commit", oid, [], "HEAD")
+
+    assert {:ok, tree} = Commit.get_tree(commit_oid)
   end
 end

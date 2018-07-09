@@ -53,3 +53,21 @@ pub fn create<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
     let oid = ResourceArc::new(OidResource { oid: commit_id });
     Ok((atoms::ok(), oid).encode(env))
 }
+
+pub fn tree<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
+    let repo_arc: ResourceArc<RepositoryResource> = try!(args[0].decode());
+    let repo = repo_arc;
+    let repo = &repo.repo;
+    let oid_arc: ResourceArc<OidResource> = try!(args[1].decode());
+
+    let commit = match repo.find_commit(oid_arc.oid) {
+        Ok(commit) => commit,
+        Err(e) => return Ok((atoms::error(), (e.raw_code(), e.message().to_string())).encode(env)),
+    };
+
+    let oid = ResourceArc::new(OidResource {
+        oid: commit.tree_id(),
+    });
+
+    Ok((atoms::ok(), oid).encode(env))
+}

@@ -1,7 +1,9 @@
 defmodule Gixir.Commit do
   defstruct repo: nil
 
-  alias Gixir.{Repository, Oid, Signature, Nif, Error}
+  alias Gixir.{Repository, Oid, Signature, Nif, Error, Tree}
+
+  @type t :: %Oid{type: :commit}
 
   @spec create(
           Repository.t(),
@@ -28,8 +30,20 @@ defmodule Gixir.Commit do
       )
 
     case result do
-      {:ok, ref} -> {:ok, %Oid{reference: ref, type: :commit}}
+      {:ok, ref} -> {:ok, %Oid{reference: ref, type: :commit, repo: repo}}
       error -> Error.to_error(error, __MODULE__)
+    end
+  end
+
+  @spec get_tree(t) :: {:ok, any}
+  def get_tree(%Oid{type: :commit} = commit_oid) do
+    case Nif.commit_tree(commit_oid.repo.reference, commit_oid.reference) do
+      {:ok, tree_id} ->
+        oid = Oid.to_struct(tree_id, :tree, commit_oid.repo)
+        {:ok, Tree.to_struct(commit_oid.repo, oid)}
+
+      error ->
+        Error.to_error(error, __MODULE__)
     end
   end
 end
