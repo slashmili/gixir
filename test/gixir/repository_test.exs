@@ -35,6 +35,6 @@ defmodule Gixir.RepositoryTest do
 
   test "gets index file for repository" do
     repo_path = get_random_repo_path()
-    assert {:ok, repo} = Repository.init_at(repo_path, bare: true)
+    assert {:ok, _repo} = Repository.init_at(repo_path, bare: true)
   end
 end

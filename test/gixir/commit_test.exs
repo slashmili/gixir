@@ -22,5 +22,8 @@ defmodule Gixir.CommitTest do
              Commit.create(repo, author, author, "initial commit", oid, [], "HEAD")
 
     assert {:ok, tree} = Commit.get_tree(commit_oid)
+
+    assert {:ok, entries} = Gixir.Tree.get(tree)
+    assert is_list(entries)
   end
 end

@@ -11,6 +11,7 @@ mod repository;
 mod index;
 mod commit;
 mod signature;
+mod tree;
 
 mod atoms {
     rustler_atoms! {
@@ -33,6 +34,7 @@ rustler_export_nifs! {
         ("index_write", 1, index::write),
         ("commit_create", 7, commit::create),
         ("commit_tree", 2, commit::tree),
+        ("tree_get_by_oid", 2, tree::get_by_oid),
     ],
     Some(on_load)
 }

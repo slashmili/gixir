@@ -14,4 +14,5 @@ defmodule Gixir.Nif do
   def index_write(_), do: :erlang.nif_error(:nif_not_loaded)
   def commit_create(_, _, _, _, _, _, _), do: :erlang.nif_error(:nif_not_loaded)
   def commit_tree(_, _), do: :erlang.nif_error(:nif_not_loaded)
+  def tree_get_by_oid(_, _), do: :erlang.nif_error(:nif_not_loaded)
 end
