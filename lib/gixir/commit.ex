@@ -5,6 +5,16 @@ defmodule Gixir.Commit do
 
   @type t :: %Oid{reference: reference, repo: Repository.t(), type: :commit}
 
+  @doc """
+  Creates a commit
+
+    If the `update_ref` is not `nil`, name of the reference that will be
+    updated to point to this commit. If the reference is not direct, it will
+    be resolved to a direct reference. Use "HEAD" to update the HEAD of the
+    current branch and make it point to this commit. If the reference
+    doesn't exist yet, it will be created. If it does exist, the first
+    parent must be the tip of this branch.
+  """
   @spec create(
           Repository.t(),
           Signature.t(),
@@ -14,7 +24,15 @@ defmodule Gixir.Commit do
           list(any),
           String.t() | nil
         ) :: {:ok, Oid.t()} | {:error, Error.t()} | no_return
-  def create(repo, author, committer, message, %Oid{type: :tree} = tree, parents, update_ref) do
+  def create(
+        repo,
+        author,
+        committer,
+        message,
+        %Oid{type: :tree} = tree,
+        parents,
+        update_ref \\ nil
+      ) do
     author = Signature.to_map(author)
     committer = Signature.to_map(committer)
 
@@ -25,7 +43,7 @@ defmodule Gixir.Commit do
         committer,
         message,
         tree.reference,
-        parents,
+        Enum.map(parents, & &1.reference),
         update_ref
       )
 
