@@ -3,7 +3,7 @@ defmodule Gixir.Repository do
 
   @type t :: %__MODULE__{path: String.t(), reference: reference()}
 
-  alias Gixir.{Error, Nif, Index}
+  alias Gixir.{Error, Nif, Index, Branch}
 
   @doc """
   Initialize a Git repository in `path`. This implies creating all the
@@ -51,9 +51,24 @@ defmodule Gixir.Repository do
   def index(repo) do
     with {:ok, ref} <- Nif.repository_index(repo.reference) do
       {:ok, %Index{reference: ref}}
+    else
+      error -> Error.to_error(error, __MODULE__)
     end
   end
 
   @spec workdir(t) :: String.t()
   def workdir(repo), do: repo.path
+
+  @spec branches(t()) :: {:ok, list(Branch.t())} | {:error, any} | no_return
+  def branches(repo) do
+    with {:ok, branches} <- Nif.repository_branches(repo.reference) do
+      branches
+      |> Enum.map(&Branch.to_struct(repo, &1))
+      |> okey
+    else
+      error -> Error.to_error(error, __MODULE__)
+    end
+  end
+
+  defp okey(r), do: {:ok, r}
 end

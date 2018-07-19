@@ -1,5 +1,6 @@
 defmodule Gixir.RepositoryTest do
   use ExUnit.Case
+  import Gixir.TestHelper
 
   alias Gixir.Repository
 
@@ -36,5 +37,16 @@ defmodule Gixir.RepositoryTest do
   test "gets index file for repository" do
     repo_path = get_random_repo_path()
     assert {:ok, _repo} = Repository.init_at(repo_path, bare: true)
+  end
+
+  test "gets list of brances" do
+    {:ok, repo} = repo_fixture()
+    repo_path = Repository.workdir(repo)
+    System.cmd("touch", ["README.md"], cd: repo_path)
+    System.cmd("git", ["add", "README.md"], cd: repo_path)
+    System.cmd("git", ["commit", "-m", "init"], cd: repo_path)
+
+    assert {:ok, branches} = Repository.branches(repo)
+    assert List.first(branches).name == "master"
   end
 end

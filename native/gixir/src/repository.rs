@@ -1,15 +1,18 @@
-use git2::Repository;
+use git2::{BranchType, Repository};
 
 use index::IndexResource;
 
 use rustler::{Encoder, Env, NifResult, Term};
 use rustler::resource::ResourceArc;
+use rustler::types::atom::Atom;
 
 use std::sync::RwLock;
 mod atoms {
     rustler_atoms! {
         atom ok;
         atom error;
+        atom remote;
+        atom local;
     }
 }
 
@@ -66,4 +69,44 @@ pub fn index<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
         index: RwLock::new(index),
     });
     Ok((atoms::ok(), index).encode(env))
+}
+
+pub fn branches<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
+    let repo_arc: ResourceArc<RepositoryResource> = try!(args[0].decode());
+    let repo = &repo_arc.repo;
+    let branches = match repo.branches(None) {
+        Ok(branches) => branches,
+        Err(e) => return Ok((atoms::error(), (e.raw_code(), e.message().to_string())).encode(env)),
+    };
+
+    let mut branch_vec: Vec<(String, Atom)> = Vec::new();
+    for (_i, elem) in branches.enumerate() {
+        let b = match elem {
+            Ok(b) => b,
+            Err(e) => {
+                return Ok((atoms::error(), (e.raw_code(), e.message().to_string())).encode(env))
+            }
+        };
+        let (branch, btype) = b;
+        let branch_name = match branch.name() {
+            Ok(b_name) => b_name,
+            Err(e) => {
+                return Ok((atoms::error(), (e.raw_code(), e.message().to_string())).encode(env))
+            }
+        };
+        let branch_name = match branch_name {
+            Some(v) => v,
+            None => {
+                return Ok((atoms::error(), (-100, "cant find branch name".to_string())).encode(env))
+            }
+        };
+
+        if btype == BranchType::Local {
+            branch_vec.push((String::from(branch_name), atoms::local()));
+        } else {
+            branch_vec.push((String::from(branch_name), atoms::remote()));
+        }
+    }
+
+    Ok((atoms::ok(), branch_vec).encode(env))
 }
