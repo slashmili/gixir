@@ -9,8 +9,6 @@ otp_release:
 os:
   - linux
 
-dist: trusty
-
 addons:
   apt:
     packages:
@@ -27,9 +25,6 @@ cache:
 before_install:
   - kerl list installations
   - kerl list releases
-  - curl -sSf https://build.travis-ci.org/files/rustup-init.sh | sh -s -- --default-toolchain=1.25.0 -y
-  - rustc --version
-  - rustup --version
   - cargo --version
   - "./scripts/travisbuild.sh"
 script:
