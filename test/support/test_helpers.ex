@@ -3,4 +3,8 @@ defmodule Gixir.TestHelper do
     name = :crypto.strong_rand_bytes(9) |> Base.encode16(case: :lower)
     Path.expand("./priv/test_tmp/#{name}")
   end
+
+  def repo_fixture do
+    Gixir.Repository.init_at(get_random_repo_path())
+  end
 end
