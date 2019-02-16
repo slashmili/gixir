@@ -14,6 +14,10 @@ defmodule Gixir.Repository do
     path
   end
 
+  def index(%__MODULE__{} = repo) do
+    Gixir.Index.new(repo)
+  end
+
   defp do_init(path, is_bare?) do
     args = if is_bare? == true, do: ["--bare", path], else: [path]
 

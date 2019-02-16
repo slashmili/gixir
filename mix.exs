@@ -27,7 +27,8 @@ defmodule Gixir.MixProject do
   defp deps do
     [
       {:ex_guard, "~> 1.3", only: :dev},
-      {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
+      {:propcheck, "~> 1.1", only: [:test, :dev]}
     ]
   end
 end
