@@ -3,6 +3,6 @@ defmodule GixirTest do
   doctest Gixir
 
   test "greets the world" do
-    assert Gixir.add(1, 2) == {:ok, 3}
+    assert Gixir.Nif.add(1, 2) == {:ok, 3}
   end
 end
